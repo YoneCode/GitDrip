@@ -59,18 +59,18 @@ export default function Page() {
           className="text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal animate-fade-rise"
           style={{ fontFamily: "'Instrument Serif', serif" }}
         >
-          Where{" "}
-          <em className="not-italic text-muted-foreground">dreams</em>{" "}
-          rise{" "}
+          Where the{" "}
+          <em className="not-italic text-muted-foreground">chain</em>{" "}
+          reads{" "}
           <em className="not-italic text-muted-foreground">
-            through the silence.
+            code.
           </em>
         </h1>
 
         <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mt-8 leading-relaxed animate-fade-rise-delay">
-          We&apos;re designing tools for deep thinkers, bold creators, and quiet
-          rebels. Amid the chaos, we build digital spaces for sharp focus and
-          inspired work.
+          An intelligent contract on GenLayer fetches your commits, scores
+          their substance through LLM consensus, and splits the sponsor pool.
+          The receipt is on-chain. The judgment is auditable.
         </p>
 
         <Link
