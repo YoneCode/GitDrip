@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
+import { humanError } from "@/lib/errors";
 
 export default function EnrollPage() {
   const { ready, login, address: addr } = useWallet();
@@ -57,7 +58,7 @@ export default function EnrollPage() {
       const hash = typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
       if (hash) setTxHash(hash);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(humanError(e instanceof Error ? e.message : String(e)));
     } finally {
       setSubmitting(false);
     }

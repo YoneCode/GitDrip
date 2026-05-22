@@ -21,8 +21,8 @@ export function ScoreBar({
           style={{ width: `${clamped}%` }}
         />
       </div>
-      <span className="tabular-nums text-(--ink-body) text-sm w-8 text-right">
-        {clamped}
+      <span className="tabular-nums text-(--ink-body) text-sm w-12 text-right" title="score out of 100">
+        {clamped}/100
       </span>
     </div>
   );

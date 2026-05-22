@@ -9,65 +9,87 @@ export default function Page() {
       <SiteHeader />
 
       <main>
-        {/* Hero — full width, left-aligned, bold type */}
-        <section className="px-6 md:px-12 lg:px-20 pt-32 pb-24">
-          <div className="max-w-5xl">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-6">
-              on-chain sponsorship, ai-scored
-            </p>
-            <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(3rem,7vw,5.5rem)] leading-[0.95] tracking-tight max-w-[14ch]">
-              fund the code that ships.
-            </h1>
-            <p className="mt-10 text-xl leading-relaxed text-(--ink-body) max-w-[52ch]">
-              sponsors deposit into a repo pool. every week, AI validators score
-              each contributor by the substance of their commits. the pool splits
-              proportionally. bots get zero. typos get one. features get fifty.
-            </p>
-
-            <div className="mt-12 flex gap-4">
-              <Button
-                asChild
-                className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base font-medium"
-              >
-                <Link href="/sponsor/genlayerlabs/genvm">
-                  sponsor a repo
-                  <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="ghost"
-                className="h-12 px-7 text-base text-(--ink-body) hover:bg-(--surface-card) border border-(--rule)"
-              >
-                <Link href="/claim">claim payout</Link>
-              </Button>
+        {/* Hero — asymmetric, dramatic scale break */}
+        <section className="px-6 md:px-12 lg:px-20 pt-20 md:pt-32 pb-20 md:pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-end max-w-6xl">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-6">
+                continuous sponsorship for open source
+              </p>
+              <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(3.2rem,8vw,6.5rem)] leading-[0.88] tracking-tight">
+                fund the
+                <br />
+                code that
+                <br />
+                <span className="text-(--accent-driprose)">ships.</span>
+              </h1>
             </div>
+
+            {/* Right column — the "live tension" element: a stylized score preview */}
+            <div className="hidden lg:block w-[280px] border-l border-(--rule) pl-8">
+              <p className="font-mono text-xs uppercase tracking-[0.15em] text-(--ink-faint) mb-4">
+                last distribution
+              </p>
+              <div className="space-y-3">
+                <ScoreLine name="alice" score={72} />
+                <ScoreLine name="bob" score={48} />
+                <ScoreLine name="carol" score={15} />
+                <ScoreLine name="dependabot" score={0} />
+              </div>
+              <p className="mt-4 font-mono text-xs text-(--ink-faint)">
+                scored by 5 validators, on-chain
+              </p>
+            </div>
+          </div>
+
+          {/* Subtitle + CTAs below the fold of the huge type */}
+          <p className="mt-12 md:mt-16 text-xl leading-relaxed text-(--ink-body) max-w-[50ch]">
+            sponsors deposit. AI validators read every commit diff and score substance.
+            the pool splits proportionally. zero humans in the loop.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Button
+              asChild
+              className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base font-medium"
+            >
+              <Link href="/sponsor/genlayerlabs/genvm">
+                sponsor a repo
+                <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="ghost"
+              className="h-12 px-7 text-base text-(--ink-body) hover:bg-(--surface-card) border border-(--rule)"
+            >
+              <Link href="/claim">claim payout</Link>
+            </Button>
           </div>
         </section>
 
         <hr />
 
-        {/* How it works — big numbered steps, left-aligned */}
-        <section className="px-6 md:px-12 lg:px-20 py-24">
+        {/* How it works — staggered, not identical rhythm */}
+        <section className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
           <div className="max-w-5xl">
-            <h2 className="font-display text-4xl md:text-5xl text-(--ink-display) tracking-tight mb-16">
-              how it works
+            <h2 className="font-display text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-16">
+              three steps, then it runs itself
             </h2>
-            <div className="space-y-16">
-              <Step
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+              <StepCard
                 n="01"
-                title="maintainer registers"
-                body="commit .gitdrip.json with your wallet to the repo root. call register_repo. the contract verifies ownership via raw.githubusercontent.com."
+                title="register"
+                body="maintainer commits .gitdrip.json with their wallet. contract verifies ownership on-chain."
               />
-              <Step
+              <StepCard
                 n="02"
-                title="sponsors deposit"
-                body="anyone sends GLT to the repo pool. each deposit tracked individually. refundable after 180 days dormant."
+                title="deposit"
+                body="anyone sponsors the pool. tracked individually. refundable after 180 days dormant."
               />
-              <Step
+              <StepCard
                 n="03"
-                title="validators score, pool splits"
-                body="every 7 days, GenLayer validators fetch commits and diffs. LLM scores substance 0-100. pool distributes proportionally. contributors call claim()."
+                title="score + split"
+                body="validators fetch diffs, LLM scores 0-100 by substance. pool distributes. claim() to withdraw."
               />
             </div>
           </div>
@@ -75,25 +97,24 @@ export default function Page() {
 
         <hr />
 
-        {/* Differentiator */}
-        <section className="px-6 md:px-12 lg:px-20 py-24">
+        {/* Differentiator — horizontal scan, not a tall table */}
+        <section className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
           <div className="max-w-5xl">
-            <h2 className="font-display text-4xl md:text-5xl text-(--ink-display) tracking-tight mb-6">
-              not like the others
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
+              vs existing tools
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-4">
+              the split self-adjusts
             </h2>
-            <p className="text-(--ink-muted) text-lg mb-12 max-w-[50ch]">
-              the split self-adjusts to real contribution. everything else is table stakes.
+            <p className="text-(--ink-muted) text-lg mb-10 max-w-[45ch]">
+              that is the only feature that matters. everything else is table stakes.
             </p>
 
-            <div className="border border-(--rule) divide-y divide-(--rule)">
-              <CompRow tool="GitHub Sponsors" desc="custodial, monthly, manual splits" />
-              <CompRow tool="Gitcoin Grants" desc="round-based, quadratic, curated" />
-              <CompRow tool="Drips Network" desc="on-chain streams, manual percentages" />
-              <CompRow
-                tool="GitDrip"
-                desc="on-chain, continuous, AI-scored auto-splits"
-                highlight
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <CompCard tool="GitHub Sponsors" line="custodial. monthly. manual." />
+              <CompCard tool="Gitcoin Grants" line="round-based. quadratic." />
+              <CompCard tool="Drips Network" line="streams. manual splits." />
+              <CompCard tool="GitDrip" line="continuous. AI-scored. automatic." highlight />
             </div>
           </div>
         </section>
@@ -104,41 +125,56 @@ export default function Page() {
   );
 }
 
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
+function ScoreLine({ name, score }: { name: string; score: number }) {
   return (
-    <div className="grid grid-cols-[4rem_1fr] md:grid-cols-[5rem_1fr] gap-6 items-start">
-      <span className="font-display text-5xl md:text-6xl text-(--accent-driprose) leading-none">
-        {n}
-      </span>
-      <div>
-        <h3 className="font-display text-2xl md:text-3xl text-(--ink-display) mb-3">
-          {title}
-        </h3>
-        <p className="text-(--ink-body) text-lg leading-relaxed max-w-[55ch]">
-          {body}
-        </p>
+    <div className="flex items-center gap-3">
+      <span className="font-mono text-sm text-(--ink-body) w-24 truncate">{name}</span>
+      <div className="flex-1 h-1.5 bg-(--surface-sunken) rounded-sm overflow-hidden">
+        <div
+          className="h-full bg-(--accent-driprose) rounded-sm"
+          style={{ width: `${score}%` }}
+        />
       </div>
+      <span className="font-mono text-xs text-(--ink-muted) w-6 text-right tabular-nums">
+        {score}
+      </span>
     </div>
   );
 }
 
-function CompRow({
+function StepCard({ n, title, body }: { n: string; title: string; body: string }) {
+  return (
+    <div className="border-t border-(--rule-strong) pt-6">
+      <span className="font-mono text-sm text-(--accent-driprose)">{n}</span>
+      <h3 className="font-display text-xl text-(--ink-display) mt-2 mb-3">{title}</h3>
+      <p className="text-(--ink-muted) text-sm leading-relaxed">{body}</p>
+    </div>
+  );
+}
+
+function CompCard({
   tool,
-  desc,
+  line,
   highlight = false,
 }: {
   tool: string;
-  desc: string;
+  line: string;
   highlight?: boolean;
 }) {
   return (
-    <div className={`grid grid-cols-[12rem_1fr] gap-6 px-6 py-5 ${highlight ? "bg-(--surface-card)" : ""}`}>
-      <span className={`font-display text-lg ${highlight ? "text-(--accent-driprose)" : "text-(--ink-muted)"}`}>
+    <div
+      className={`border px-5 py-4 ${
+        highlight
+          ? "border-(--accent-driprose) bg-(--accent-driprose-soft)"
+          : "border-(--rule)"
+      }`}
+    >
+      <p className={`font-display text-base mb-1 ${highlight ? "text-(--accent-driprose)" : "text-(--ink-display)"}`}>
         {tool}
-      </span>
-      <span className={`text-base ${highlight ? "text-(--ink-display)" : "text-(--ink-body)"}`}>
-        {desc}
-      </span>
+      </p>
+      <p className={`text-sm ${highlight ? "text-(--ink-body)" : "text-(--ink-muted)"}`}>
+        {line}
+      </p>
     </div>
   );
 }

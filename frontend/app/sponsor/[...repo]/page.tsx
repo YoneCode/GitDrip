@@ -11,6 +11,7 @@ import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { getRepo, sponsor, type RepoRecord } from "@/lib/contract";
 import { parseGlt } from "@/lib/format";
+import { humanError } from "@/lib/errors";
 import { explorerContract } from "@/lib/genlayer";
 
 export default function SponsorPage({
@@ -55,7 +56,7 @@ export default function SponsorPage({
         typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
       if (hash) setTxHash(hash);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = humanError(e instanceof Error ? e.message : String(e));
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -139,18 +140,24 @@ export default function SponsorPage({
             </div>
 
             {!record && !loading && (
-              <p className="mt-12 text-(--ink-muted) leading-relaxed max-w-[55ch]">
-                <span className="font-mono">{repoSlug}</span> isn&apos;t
-                registered yet. The maintainer needs to commit a{" "}
-                <code className="font-mono text-(--ink-body)">
-                  .gitdrip.json
-                </code>{" "}
-                file to the repo with their wallet, then call{" "}
-                <code className="font-mono text-(--ink-body)">
-                  register_repo
-                </code>
-                .
-              </p>
+              <div className="border-t border-(--rule) pt-8 mt-8">
+                <h2 className="font-display text-2xl text-(--ink-display) mb-3">
+                  not registered yet
+                </h2>
+                <p className="text-(--ink-muted) leading-relaxed max-w-[50ch]">
+                  <span className="font-mono text-(--ink-body)">{repoSlug}</span> needs
+                  to be registered before it can receive sponsorships. the maintainer
+                  commits a <code className="font-mono text-(--ink-body)">.gitdrip.json</code>{" "}
+                  file, then calls register_repo.
+                </p>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="mt-4 border border-(--rule) h-10 px-5"
+                >
+                  <Link href="/register">go to register</Link>
+                </Button>
+              </div>
             )}
           </section>
 
