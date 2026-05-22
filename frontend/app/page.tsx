@@ -1,180 +1,85 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 
 export default function Page() {
   return (
-    <>
-      <SiteHeader />
-
-      <main>
-        {/* Hero — asymmetric, dramatic scale break */}
-        <section className="px-6 md:px-12 lg:px-20 pt-20 md:pt-32 pb-20 md:pb-32">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-end max-w-6xl">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-6">
-                continuous sponsorship for open source
-              </p>
-              <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(3.2rem,8vw,6.5rem)] leading-[0.88] tracking-tight">
-                fund the
-                <br />
-                code that
-                <br />
-                <span className="text-(--accent-driprose)">ships.</span>
-              </h1>
-            </div>
-
-            {/* Right column — the "live tension" element: a stylized score preview */}
-            <div className="hidden lg:block w-[280px] border-l border-(--rule) pl-8">
-              <p className="font-mono text-xs uppercase tracking-[0.15em] text-(--ink-faint) mb-4">
-                last distribution
-              </p>
-              <div className="space-y-3">
-                <ScoreLine name="alice" score={72} />
-                <ScoreLine name="bob" score={48} />
-                <ScoreLine name="carol" score={15} />
-                <ScoreLine name="dependabot" score={0} />
-              </div>
-              <p className="mt-4 font-mono text-xs text-(--ink-faint)">
-                scored by 5 validators, on-chain
-              </p>
-            </div>
-          </div>
-
-          {/* Subtitle + CTAs below the fold of the huge type */}
-          <p className="mt-12 md:mt-16 text-xl leading-relaxed text-(--ink-body) max-w-[50ch]">
-            sponsors deposit. AI validators read every commit diff and score substance.
-            the pool splits proportionally. zero humans in the loop.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Button
-              asChild
-              className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base font-medium"
-            >
-              <Link href="/sponsor/genlayerlabs/genvm">
-                sponsor a repo
-                <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
-              className="h-12 px-7 text-base text-(--ink-body) hover:bg-(--surface-card) border border-(--rule)"
-            >
-              <Link href="/claim">claim payout</Link>
-            </Button>
-          </div>
-        </section>
-
-        <hr />
-
-        {/* How it works — staggered, not identical rhythm */}
-        <section className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
-          <div className="max-w-5xl">
-            <h2 className="font-display text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-16">
-              three steps, then it runs itself
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-              <StepCard
-                n="01"
-                title="register"
-                body="maintainer commits .gitdrip.json with their wallet. contract verifies ownership on-chain."
-              />
-              <StepCard
-                n="02"
-                title="deposit"
-                body="anyone sponsors the pool. tracked individually. refundable after 180 days dormant."
-              />
-              <StepCard
-                n="03"
-                title="score + split"
-                body="validators fetch diffs, LLM scores 0-100 by substance. pool distributes. claim() to withdraw."
-              />
-            </div>
-          </div>
-        </section>
-
-        <hr />
-
-        {/* Differentiator — horizontal scan, not a tall table */}
-        <section className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
-          <div className="max-w-5xl">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
-              vs existing tools
-            </p>
-            <h2 className="font-display text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-4">
-              the split self-adjusts
-            </h2>
-            <p className="text-(--ink-muted) text-lg mb-10 max-w-[45ch]">
-              that is the only feature that matters. everything else is table stakes.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <CompCard tool="GitHub Sponsors" line="custodial. monthly. manual." />
-              <CompCard tool="Gitcoin Grants" line="round-based. quadratic." />
-              <CompCard tool="Drips Network" line="streams. manual splits." />
-              <CompCard tool="GitDrip" line="continuous. AI-scored. automatic." highlight />
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <SiteFooter />
-    </>
-  );
-}
-
-function ScoreLine({ name, score }: { name: string; score: number }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="font-mono text-sm text-(--ink-body) w-24 truncate">{name}</span>
-      <div className="flex-1 h-1.5 bg-(--surface-sunken) rounded-sm overflow-hidden">
-        <div
-          className="h-full bg-(--accent-driprose) rounded-sm"
-          style={{ width: `${score}%` }}
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Fullscreen background video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4"
+          type="video/mp4"
         />
-      </div>
-      <span className="font-mono text-xs text-(--ink-muted) w-6 text-right tabular-nums">
-        {score}
-      </span>
-    </div>
-  );
-}
+      </video>
 
-function StepCard({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <div className="border-t border-(--rule-strong) pt-6">
-      <span className="font-mono text-sm text-(--accent-driprose)">{n}</span>
-      <h3 className="font-display text-xl text-(--ink-display) mt-2 mb-3">{title}</h3>
-      <p className="text-(--ink-muted) text-sm leading-relaxed">{body}</p>
-    </div>
-  );
-}
+      {/* Navigation */}
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <Link
+          href="/"
+          className="text-3xl tracking-tight text-foreground"
+          style={{ fontFamily: "'Instrument Serif', serif" }}
+        >
+          GitDrip<sup className="text-xs">®</sup>
+        </Link>
 
-function CompCard({
-  tool,
-  line,
-  highlight = false,
-}: {
-  tool: string;
-  line: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={`border px-5 py-4 ${
-        highlight
-          ? "border-(--accent-driprose) bg-(--accent-driprose-soft)"
-          : "border-(--rule)"
-      }`}
-    >
-      <p className={`font-display text-base mb-1 ${highlight ? "text-(--accent-driprose)" : "text-(--ink-display)"}`}>
-        {tool}
-      </p>
-      <p className={`text-sm ${highlight ? "text-(--ink-body)" : "text-(--ink-muted)"}`}>
-        {line}
-      </p>
+        <div className="hidden md:flex items-center gap-8">
+          <Link href="/" className="text-sm text-foreground transition-colors">
+            Home
+          </Link>
+          <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+          <Link href="/register" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Register
+          </Link>
+          <Link href="/claim" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Claim
+          </Link>
+          <Link href="/vs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Compare
+          </Link>
+        </div>
+
+        <Link
+          href="/sponsor/genlayerlabs/genvm"
+          className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground hover:scale-[1.03] transition-transform"
+        >
+          Begin Journey
+        </Link>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-32 pb-40 py-[90px]">
+        <h1
+          className="text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal animate-fade-rise"
+          style={{ fontFamily: "'Instrument Serif', serif" }}
+        >
+          Where{" "}
+          <em className="not-italic text-muted-foreground">dreams</em>{" "}
+          rise{" "}
+          <em className="not-italic text-muted-foreground">
+            through the silence.
+          </em>
+        </h1>
+
+        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mt-8 leading-relaxed animate-fade-rise-delay">
+          We&apos;re designing tools for deep thinkers, bold creators, and quiet
+          rebels. Amid the chaos, we build digital spaces for sharp focus and
+          inspired work.
+        </p>
+
+        <Link
+          href="/sponsor/genlayerlabs/genvm"
+          className="liquid-glass rounded-full px-14 py-5 text-base text-foreground mt-12 hover:scale-[1.03] transition-transform cursor-pointer animate-fade-rise-delay-2"
+        >
+          Begin Journey
+        </Link>
+      </section>
     </div>
   );
 }
