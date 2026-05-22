@@ -1,0 +1,23 @@
+# gltest configuration. Read by `pytest` via the genlayer-test plugin.
+#
+# `gltest` substitutes ${ENV_VAR} from the active shell environment; load
+# `.env` first (e.g. `set -a && source .env && set +a`).
+
+contract_path: contract/contracts/
+
+networks:
+  # Local studio/glsim — gasless, no funding needed.
+  localnet:
+    rpc_url: "http://127.0.0.1:4000/api"
+    accounts: []
+
+  studionet:
+    rpc_url: "https://studio.genlayer.com/api"
+    accounts: []
+
+  # Public testnet — needs funded accounts.
+  testnet_bradbury:
+    rpc_url: "https://rpc-bradbury.genlayer.com"
+    accounts:
+      - "${ACCOUNT_PRIVATE_KEY_1}"
+      - "${ACCOUNT_PRIVATE_KEY_2}"
