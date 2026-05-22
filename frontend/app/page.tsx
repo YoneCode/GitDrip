@@ -54,6 +54,7 @@ export default function Page() {
       </nav>
 
       {/* Hero Section */}
+      <main>
       <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-32 pb-40 py-[90px]">
         <h1
           className="text-5xl sm:text-7xl md:text-8xl leading-[0.95] tracking-[-2.46px] max-w-7xl font-normal animate-fade-rise"
@@ -80,6 +81,7 @@ export default function Page() {
           Trust the Consensus
         </Link>
       </section>
+      </main>
     </div>
   );
 }

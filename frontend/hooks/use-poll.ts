@@ -14,9 +14,9 @@ export function usePoll<T>(
 ): T | null {
   const [value, setValue] = useState<T | null>(null);
   const fnRef = useRef(fn);
-  fnRef.current = fn;
 
   useEffect(() => {
+    fnRef.current = fn;
     let cancelled = false;
     let timer: number | null = null;
 

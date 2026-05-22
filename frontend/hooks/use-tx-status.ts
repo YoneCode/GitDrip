@@ -34,9 +34,14 @@ export function useTxStatus(hash: string | null, intervalMs = 3000): TxStatus | 
       if (cancelled) return;
       if (typeof document !== "undefined" && document.hidden) return;
       try {
-        const tx: any = await client().getTransaction({
+        const tx = (await client().getTransaction({
           hash: hash as unknown as Parameters<ReturnType<typeof client>["getTransaction"]>[0]["hash"],
-        });
+        })) as unknown as {
+          lastRound?: { validatorVotesName?: string[]; roundValidators?: unknown[] };
+          consensus_data?: { leader_receipt?: Array<{ validatorVotesName?: string[]; roundValidators?: unknown[] }> };
+          status_name?: string;
+          status?: string;
+        };
         if (cancelled) return;
 
         const lastRound = tx?.consensus_data?.leader_receipt?.[0]

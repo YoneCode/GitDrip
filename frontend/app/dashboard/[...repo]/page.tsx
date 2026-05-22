@@ -329,7 +329,7 @@ function RefundSection({
   }, [addr, repoSlug, txHash]);
 
   const DORMANT_SEC = 180 * 24 * 3600;
-  const nowSec = Math.floor(Date.now() / 1000);
+  const [nowSec] = useState(() => Math.floor(Date.now() / 1000));
   const lastDist = record.last_distribution_unix || record.period_start_unix;
   const isDormant = nowSec - lastDist >= DORMANT_SEC;
 

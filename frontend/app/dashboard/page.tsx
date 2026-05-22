@@ -79,6 +79,7 @@ export default function DashboardIndex() {
       <main className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
         <div className="max-w-5xl">
           <div className="flex items-center justify-between mb-4">
+  <h1 className="sr-only">Dashboard — look up an on-chain repo</h1>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose)">
               dashboard
             </p>

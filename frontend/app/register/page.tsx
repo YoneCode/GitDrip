@@ -145,7 +145,7 @@ export default function RegisterPage() {
                 </button>
               </div>
               {/* The actual code, big and breathable */}
-              <pre className="px-6 py-8 md:px-10 md:py-10 font-mono text-lg md:text-2xl leading-[1.6] text-(--ink-display) overflow-x-auto tabular-nums">
+              <pre className="px-6 py-8 md:px-10 md:py-10 font-mono text-lg md:text-2xl leading-[1.6] text-(--ink-display) overflow-x-auto tabular-nums" tabIndex={0}>
                 <code>
                   {`{\n  `}
                   <span className="text-(--accent-driprose)">
