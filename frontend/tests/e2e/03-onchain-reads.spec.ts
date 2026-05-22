@@ -42,3 +42,21 @@ test("/dashboard/<unregistered> shows 'isn't registered' empty state", async ({
     timeout: 15_000,
   });
 });
+
+test("/dashboard/alnamodevloper/gitdrip-demo shows the registered repo state", async ({
+  page,
+}) => {
+  await page.goto("/dashboard/alnamodevloper/gitdrip-demo", {
+    waitUntil: "domcontentloaded",
+  });
+  await waitForApp(page);
+  // The registered repo must NOT show the empty state.
+  await expect(page.locator("body")).not.toContainText(/isn.?t registered/i, {
+    timeout: 15_000,
+  });
+  // It must surface the pool + maintainer somewhere on the page.
+  await expect(page.locator("body")).toContainText(/pool/i, { timeout: 15_000 });
+  await expect(page.getByText(/0x3ebd/i).first()).toBeVisible({
+    timeout: 15_000,
+  });
+});
