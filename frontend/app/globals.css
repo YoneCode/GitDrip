@@ -3,9 +3,11 @@
 @import "tw-animate-css";
 
 :root {
+  /* Fonts */
   --font-display: 'Instrument Serif', serif;
   --font-body: 'Inter', sans-serif;
 
+  /* HSL theme (used by landing + shadcn primitives) */
   --background: 201 100% 13%;
   --foreground: 0 0% 100%;
   --muted-foreground: 240 4% 66%;
@@ -18,6 +20,38 @@
   --input: 0 0% 18%;
   --ring: 0 0% 100%;
   --radius: 0.5rem;
+
+  /* ----------------------------------------------------------------
+   * Bridge tokens. The product pages (dashboard, register, claim, vs,
+   * sponsor, enroll) still reference these names. They resolve to the
+   * navy-blue HSL theme so the whole app stays in one visual system.
+   * ---------------------------------------------------------------- */
+
+  /* Surfaces — derived from --background (navy 201/100/13), darker on top */
+  --surface-bg: hsl(201 100% 13%);
+  --surface-card: hsl(201 60% 18%);
+  --surface-sunken: hsl(201 70% 9%);
+  --surface-elevated: hsl(201 50% 22%);
+
+  /* Ink — white-on-navy with falloff */
+  --ink-display: hsl(0 0% 100%);
+  --ink-body: hsl(0 0% 90%);
+  --ink-muted: hsl(210 15% 70%);
+  --ink-faint: hsl(210 15% 50%);
+  --rule: hsl(201 40% 28%);
+  --rule-strong: hsl(201 40% 38%);
+
+  /* Driprose accent — bright teal-cyan that pops on navy */
+  --accent-driprose: hsl(180 80% 60%);
+  --accent-driprose-hover: hsl(180 90% 70%);
+  --accent-driprose-soft: hsl(180 50% 25% / 0.4);
+  --accent-on-driprose: hsl(201 100% 10%);
+
+  /* Status palette */
+  --status-good: hsl(150 65% 55%);
+  --status-warn: hsl(40 90% 60%);
+  --status-bad: hsl(0 75% 65%);
+  --focus-ring: hsl(180 80% 60%);
 }
 
 @theme inline {
@@ -32,7 +66,12 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-card: var(--surface-card);
+  --color-card-foreground: var(--ink-body);
+  --color-destructive: var(--status-bad);
   --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 * {
@@ -45,6 +84,20 @@ body {
   font-family: var(--font-body);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Display headings use Instrument Serif for editorial feel */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Tabular numerals everywhere — addresses, wei, scores align */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+::selection {
+  background: var(--accent-driprose);
+  color: var(--accent-on-driprose);
 }
 
 /* Liquid Glass Effect */
@@ -91,4 +144,11 @@ body {
 
 .animate-fade-rise-delay-2 {
   animation: fade-rise 0.8s ease-out 0.4s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
