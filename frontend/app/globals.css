@@ -1,7 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
-
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap');
 
 :root {
   --font-display: 'Instrument Serif', serif;
