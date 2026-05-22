@@ -1,23 +1,30 @@
 # gltest configuration. Read by `pytest` via the genlayer-test plugin.
 #
-# `gltest` substitutes ${ENV_VAR} from the active shell environment; load
-# `.env` first (e.g. `set -a && source .env && set +a`).
+# Substitutes ${ENV_VAR} from the active shell. Load `.env` first:
+#   set -a && source .env && set +a
+#
+# When the `networks` block is present, gltest replaces ALL preconfigured
+# networks — so we list every network we want available.
 
-contract_path: contract/contracts/
+paths:
+  contracts: contract/contracts
+  artifacts: contract/artifacts
+
+environment: .env
 
 networks:
-  # Local studio/glsim — gasless, no funding needed.
+  default: localnet
+
   localnet:
-    rpc_url: "http://127.0.0.1:4000/api"
-    accounts: []
+    url: "http://127.0.0.1:4000/api"
+    # Direct-mode tests don't actually consult these (they run in-process),
+    # but gltest validates the config at session start.
+    accounts:
+      - "0x0000000000000000000000000000000000000000000000000000000000000001"
 
-  studionet:
-    rpc_url: "https://studio.genlayer.com/api"
-    accounts: []
-
-  # Public testnet — needs funded accounts.
+  # Public testnet — accounts loaded from .env via env substitution.
   testnet_bradbury:
-    rpc_url: "https://rpc-bradbury.genlayer.com"
+    url: "https://rpc-bradbury.genlayer.com"
     accounts:
       - "${ACCOUNT_PRIVATE_KEY_1}"
       - "${ACCOUNT_PRIVATE_KEY_2}"
