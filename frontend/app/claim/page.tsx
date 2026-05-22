@@ -10,10 +10,19 @@ import { WeiAmount } from "@/components/wei-amount";
 import { TxLink } from "@/components/tx-link";
 import { TxStatusPill } from "@/components/tx-status-pill";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { claim, getPending } from "@/lib/contract";
+import {
+  claim,
+  getPending,
+  getRepo,
+  getRoster,
+  getScoreLog,
+  type RepoRecord,
+} from "@/lib/contract";
 import { humanError } from "@/lib/errors";
 import { useCountUp } from "@/hooks/use-count-up";
 import { useTxStatus } from "@/hooks/use-tx-status";
+import { listRoles } from "@/lib/profile";
+import { formatGlt } from "@/lib/format";
 
 export default function ClaimPage() {
   const { ready, authenticated, login, address: addr } = useWallet();
@@ -118,6 +127,7 @@ export default function ClaimPage() {
               <p className="mt-4 text-sm text-(--ink-faint)">
                 One transaction, all of it at once.
               </p>
+              <EnrollmentRail wallet={addr} />
             </section>
           ) : (
             <section>
@@ -130,7 +140,8 @@ export default function ClaimPage() {
               <p className="text-lg text-(--ink-muted) mb-10 max-w-[50ch]">
                 Your balance fills after a distribution scores you above zero on a repo where you are enrolled.
               </p>
-              <div className="border-t border-(--rule) pt-8 space-y-6">
+              <EnrollmentRail wallet={addr} />
+              <div className="border-t border-(--rule) pt-8 mt-12 space-y-6">
                 <OnboardStep n="1" text="Enroll in a registered repo" href="/enroll" />
                 <OnboardStep n="2" text="Make commits that score above zero" />
                 <OnboardStep n="3" text="Wait for the next distribution (every 7 days or per release)" />
@@ -169,4 +180,161 @@ function OnboardStep({ n, text, href }: { n: string; text: string; href?: string
   );
   if (href) return <Link href={href} className="block hover:text-(--accent-driprose) transition-colors">{content}</Link>;
   return content;
+}
+
+// ---------------------------------------------------------------------------
+// EnrollmentRail — for each repo this wallet has touched (from localStorage),
+// fetch the on-chain record + roster + latest score snapshot. Personalised
+// without needing an extra contract method.
+// ---------------------------------------------------------------------------
+type RepoState = {
+  slug: string;
+  loading: boolean;
+  registered: boolean;
+  record?: RepoRecord;
+  enrolledAs?: string | null;
+  lastScore?: number | null;
+  lastDistShareWei?: bigint | null;
+};
+
+function EnrollmentRail({ wallet }: { wallet: string | null | undefined }) {
+  const [items, setItems] = useState<RepoState[] | null>(null);
+
+  useEffect(() => {
+    if (!wallet) {
+      setItems(null);
+      return;
+    }
+    const slugs = listRoles(wallet, "contributor");
+    if (slugs.length === 0) {
+      setItems([]);
+      return;
+    }
+    let cancelled = false;
+    // Sequential to respect Bradbury's per-call rate limit
+    (async () => {
+      const out: RepoState[] = slugs.map((s) => ({
+        slug: s,
+        loading: true,
+        registered: false,
+      }));
+      if (!cancelled) setItems(out);
+
+      const walletLc = wallet.toLowerCase();
+      for (let i = 0; i < slugs.length; i++) {
+        if (cancelled) return;
+        const slug = slugs[i];
+        try {
+          const rec = await getRepo(slug);
+          if (!rec) {
+            out[i] = { slug, loading: false, registered: false };
+          } else {
+            const roster = await getRoster(slug);
+            let enrolledAs: string | null = null;
+            for (const [l, w] of Object.entries(roster)) {
+              if (w.toLowerCase() === walletLc) {
+                enrolledAs = l;
+                break;
+              }
+            }
+            let lastScore: number | null = null;
+            let lastShare: bigint | null = null;
+            if (rec.distribution_count > 0 && enrolledAs) {
+              const snap = await getScoreLog(slug, rec.distribution_count);
+              if (snap) {
+                lastScore = snap.scores?.[enrolledAs] ?? null;
+                // Approximate per-user share: distributed_wei × score / sum(scores)
+                const total = Object.values(snap.scores ?? {}).reduce(
+                  (a, b) => a + Number(b),
+                  0,
+                );
+                if (total > 0 && lastScore !== null) {
+                  try {
+                    const distributed = BigInt(snap.distributed_wei ?? "0");
+                    lastShare = (distributed * BigInt(lastScore)) / BigInt(total);
+                  } catch {
+                    lastShare = null;
+                  }
+                }
+              }
+            }
+            out[i] = {
+              slug,
+              loading: false,
+              registered: true,
+              record: rec,
+              enrolledAs,
+              lastScore,
+              lastDistShareWei: lastShare,
+            };
+          }
+          if (!cancelled) setItems([...out]);
+        } catch {
+          out[i] = { slug, loading: false, registered: false };
+          if (!cancelled) setItems([...out]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [wallet]);
+
+  if (items === null || items.length === 0) return null;
+
+  return (
+    <section className="mt-12 border-t border-(--rule) pt-8">
+      <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-(--ink-faint) mb-5">
+        Repos You&apos;re Enrolled In
+      </h2>
+      <ul className="divide-y divide-(--rule)">
+        {items.map((it) => (
+          <li key={it.slug} className="py-4 flex items-baseline justify-between gap-4 flex-wrap">
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/dashboard/${it.slug}`}
+                className="font-mono text-sm text-(--ink-body) hover:text-(--accent-driprose) underline-offset-4 hover:underline truncate"
+              >
+                {it.slug}
+              </Link>
+              {it.loading ? (
+                <p className="text-xs text-(--ink-muted) mt-1">reading…</p>
+              ) : !it.registered ? (
+                <p className="text-xs text-(--status-warn) mt-1">
+                  no longer registered on-chain
+                </p>
+              ) : (
+                <p className="text-xs text-(--ink-muted) mt-1">
+                  pool{" "}
+                  <span className="text-(--ink-body) tabular-nums">
+                    {formatGlt(BigInt(it.record!.pool_wei), 2)}
+                  </span>{" "}
+                  GLT · {it.record!.distribution_count}{" "}
+                  {it.record!.distribution_count === 1 ? "round" : "rounds"}
+                  {it.enrolledAs ? (
+                    <>
+                      {" "}
+                      · enrolled as{" "}
+                      <span className="font-mono text-(--ink-body)">
+                        {it.enrolledAs}
+                      </span>
+                    </>
+                  ) : (
+                    <> · not in current roster</>
+                  )}
+                </p>
+              )}
+            </div>
+            {it.lastDistShareWei !== null && it.lastDistShareWei !== undefined ? (
+              <p className="text-sm tabular-nums text-(--ink-body) shrink-0">
+                last round: +{formatGlt(it.lastDistShareWei, 4)} GLT
+              </p>
+            ) : it.registered && it.record!.distribution_count === 0 ? (
+              <p className="text-xs text-(--ink-faint) shrink-0">no rounds yet</p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }

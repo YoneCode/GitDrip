@@ -20,6 +20,9 @@ import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 import { humanError } from "@/lib/errors";
 import { useTypewriter } from "@/hooks/use-typewriter";
 import { useTxStatus } from "@/hooks/use-tx-status";
+import { useRegisterPreflight } from "@/hooks/use-register-preflight";
+import { CheckRow, type CheckStatus } from "@/components/check-row";
+import { recordRepoActivity } from "@/lib/profile";
 
 export default function RegisterPage() {
   const { ready, login, address: addr } = useWallet();
@@ -34,6 +37,16 @@ export default function RegisterPage() {
   const typedWallet = useTypewriter(walletLine, 600);
   const jsonTemplate = `{\n  "maintainer_wallet": "${walletLine}"\n}`;
   const txStatus = useTxStatus(txHash);
+  const preflight = useRegisterPreflight(repo, addr ? addr.toLowerCase() : null);
+
+  const blockSubmit = (() => {
+    if (!preflight.slug) return false; // no slug yet — nothing to block
+    if (preflight.chain.kind === "registered") return true;
+    if (preflight.proof.kind === "found" && preflight.proof.matches === false)
+      return true;
+    if (preflight.proof.kind === "malformed") return true;
+    return false;
+  })();
 
   const copyTemplate = () => {
     void navigator.clipboard.writeText(jsonTemplate);
@@ -62,7 +75,10 @@ export default function RegisterPage() {
       });
       const hash =
         typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
-      if (hash) setTxHash(hash);
+      if (hash) {
+        setTxHash(hash);
+        if (addr) recordRepoActivity(addr, slug, "maintainer");
+      }
     } catch (e: unknown) {
       setError(humanError(e instanceof Error ? e.message : String(e)));
     } finally {
@@ -215,7 +231,7 @@ export default function RegisterPage() {
 
             <Button
               onClick={onRegister}
-              disabled={submitting || !addr}
+              disabled={submitting || !addr || blockSubmit}
               className="mt-6 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base"
             >
               {submitting ? (
@@ -230,6 +246,8 @@ export default function RegisterPage() {
                 </>
               )}
             </Button>
+
+            <PreflightRows preflight={preflight} hasWallet={!!addr} />
 
             {error && (
               <p
@@ -246,6 +264,7 @@ export default function RegisterPage() {
                 <span className="text-sm text-(--ink-muted)">
                   tx · <TxLink hash={txHash} />
                 </span>
+                <NextStep slug={preflight.slug} />
               </div>
             )}
           </div>
@@ -253,5 +272,140 @@ export default function RegisterPage() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Preflight rows: surface what we know about the slug + .gitdrip.json file
+// before the user spends gas trying to register.
+// ---------------------------------------------------------------------------
+function PreflightRows({
+  preflight,
+  hasWallet,
+}: {
+  preflight: ReturnType<typeof useRegisterPreflight>;
+  hasWallet: boolean;
+}) {
+  if (!preflight.slug) return null;
+
+  const proofRow = (() => {
+    const p = preflight.proof;
+    if (p.kind === "checking") {
+      return (
+        <CheckRow status={"checking" as CheckStatus}>
+          Looking for .gitdrip.json on the default branch…
+        </CheckRow>
+      );
+    }
+    if (p.kind === "missing") {
+      return (
+        <CheckRow status={"warn" as CheckStatus}>
+          .gitdrip.json isn&apos;t on the default branch yet. Push the file
+          above first, then try again.
+        </CheckRow>
+      );
+    }
+    if (p.kind === "malformed") {
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          Found .gitdrip.json but it&apos;s not valid JSON or missing{" "}
+          <span className="font-mono">maintainer_wallet</span>.
+        </CheckRow>
+      );
+    }
+    if (p.kind === "found") {
+      if (!hasWallet) {
+        return (
+          <CheckRow status={"warn" as CheckStatus}>
+            Found .gitdrip.json (wallet:{" "}
+            <span className="font-mono break-all">{p.walletInFile}</span>).
+            Connect to verify it matches yours.
+          </CheckRow>
+        );
+      }
+      if (p.matches === true) {
+        return (
+          <CheckRow status={"pass" as CheckStatus}>
+            .gitdrip.json found and the wallet matches yours. Ready to register.
+          </CheckRow>
+        );
+      }
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          The wallet in .gitdrip.json (
+          <span className="font-mono break-all">{p.walletInFile}</span>)
+          doesn&apos;t match the connected wallet. Update the file or connect
+          the right wallet.
+        </CheckRow>
+      );
+    }
+    return null;
+  })();
+
+  const chainRow = (() => {
+    const c = preflight.chain;
+    if (c.kind === "checking") {
+      return (
+        <CheckRow status={"checking" as CheckStatus}>
+          Checking on-chain…
+        </CheckRow>
+      );
+    }
+    if (c.kind === "registered") {
+      if (c.mine) {
+        return (
+          <CheckRow status={"warn" as CheckStatus}>
+            You already registered this repo. Nothing to do here — the
+            register page is one-shot per slug.
+          </CheckRow>
+        );
+      }
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          Already registered on-chain by another wallet (
+          <span className="font-mono break-all">{c.record.maintainer}</span>).
+        </CheckRow>
+      );
+    }
+    if (c.kind === "unregistered") {
+      return (
+        <CheckRow status={"pass" as CheckStatus}>
+          Slug is free on-chain.
+        </CheckRow>
+      );
+    }
+    return null;
+  })();
+
+  return (
+    <div className="mt-5 flex flex-col gap-2">
+      {chainRow}
+      {proofRow}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Next-step pill — appears after a successful tx submission
+// ---------------------------------------------------------------------------
+function NextStep({ slug }: { slug: string }) {
+  if (!slug) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-3">
+      <a
+        href={`/sponsor/${slug}`}
+        className="inline-flex items-center gap-1 text-sm text-(--accent-driprose) hover:text-(--accent-driprose-hover) underline underline-offset-4"
+      >
+        Share /sponsor/{slug} with backers
+        <ArrowRight aria-hidden className="w-3.5 h-3.5" />
+      </a>
+      <a
+        href={`/dashboard/${slug}`}
+        className="inline-flex items-center gap-1 text-sm text-(--ink-muted) hover:text-(--accent-driprose) underline underline-offset-4"
+      >
+        Open the dashboard
+        <ArrowRight aria-hidden className="w-3.5 h-3.5" />
+      </a>
+    </div>
   );
 }

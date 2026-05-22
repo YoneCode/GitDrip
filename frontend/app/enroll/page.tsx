@@ -20,6 +20,9 @@ import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 import { humanError } from "@/lib/errors";
 import { useTypewriter } from "@/hooks/use-typewriter";
 import { useTxStatus } from "@/hooks/use-tx-status";
+import { useEnrollPreflight } from "@/hooks/use-enroll-preflight";
+import { CheckRow, type CheckStatus } from "@/components/check-row";
+import { recordRepoActivity } from "@/lib/profile";
 
 export default function EnrollPage() {
   const { ready, login, address: addr } = useWallet();
@@ -42,6 +45,24 @@ export default function EnrollPage() {
       : "gitdrip:<owner/repo>:<your-wallet>";
   const typedGist = useTypewriter(gistBody, 600);
   const txStatus = useTxStatus(txHash);
+
+  const preflight = useEnrollPreflight(
+    repo,
+    ghLogin,
+    gistId,
+    addr ? addr.toLowerCase() : null,
+  );
+
+  const blockSubmit = (() => {
+    if (!preflight.slug) return false;
+    if (preflight.repo.kind === "unregistered") return true;
+    if (preflight.repo.kind === "registered" && preflight.repo.alreadyEnrolled)
+      return true;
+    if (preflight.gist.kind === "missing") return true;
+    if (preflight.gist.kind === "wrong_owner") return true;
+    if (preflight.gist.kind === "missing_body") return true;
+    return false;
+  })();
 
   const copyGist = () => {
     void navigator.clipboard.writeText(gistBody);
@@ -74,7 +95,10 @@ export default function EnrollPage() {
       });
       const hash =
         typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
-      if (hash) setTxHash(hash);
+      if (hash) {
+        setTxHash(hash);
+        if (addr) recordRepoActivity(addr, slug, "contributor");
+      }
     } catch (e: unknown) {
       setError(humanError(e instanceof Error ? e.message : String(e)));
     } finally {
@@ -242,7 +266,7 @@ export default function EnrollPage() {
 
             <Button
               onClick={onEnroll}
-              disabled={submitting || !addr}
+              disabled={submitting || !addr || blockSubmit}
               className="mt-6 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base"
             >
               {submitting ? (
@@ -257,6 +281,8 @@ export default function EnrollPage() {
                 </>
               )}
             </Button>
+
+            <PreflightRows preflight={preflight} hasWallet={!!addr} />
 
             {error && (
               <p
@@ -273,6 +299,7 @@ export default function EnrollPage() {
                 <span className="text-sm text-(--ink-muted)">
                   tx · <TxLink hash={txHash} />
                 </span>
+                <NextStep slug={preflight.slug} />
               </div>
             )}
           </div>
@@ -280,5 +307,148 @@ export default function EnrollPage() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Preflight rows: inline, real-time confirmation that everything is in place
+// before the user spends gas trying to enroll.
+// ---------------------------------------------------------------------------
+function PreflightRows({
+  preflight,
+  hasWallet,
+}: {
+  preflight: ReturnType<typeof useEnrollPreflight>;
+  hasWallet: boolean;
+}) {
+  if (!preflight.slug) return null;
+
+  const repoRow = (() => {
+    const r = preflight.repo;
+    if (r.kind === "checking") {
+      return (
+        <CheckRow status={"checking" as CheckStatus}>
+          Checking that the repo is registered…
+        </CheckRow>
+      );
+    }
+    if (r.kind === "unregistered") {
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          This repo isn&apos;t registered on-chain yet. Ask the maintainer to
+          register it first.
+        </CheckRow>
+      );
+    }
+    if (r.kind === "registered") {
+      if (r.alreadyEnrolled) {
+        return (
+          <CheckRow status={"warn" as CheckStatus}>
+            Your wallet is already enrolled as{" "}
+            <span className="font-mono">{r.enrolledLogin}</span>. Nothing more
+            to do here.
+          </CheckRow>
+        );
+      }
+      return (
+        <CheckRow status={"pass" as CheckStatus}>
+          Repo is registered. Ready to add you to the roster.
+        </CheckRow>
+      );
+    }
+    return null;
+  })();
+
+  const gistRow = (() => {
+    const g = preflight.gist;
+    if (g.kind === "checking") {
+      return (
+        <CheckRow status={"checking" as CheckStatus}>
+          Fetching the gist…
+        </CheckRow>
+      );
+    }
+    if (g.kind === "missing") {
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          Gist not found. Double-check the id you pasted.
+        </CheckRow>
+      );
+    }
+    if (g.kind === "private") {
+      return (
+        <CheckRow status={"warn" as CheckStatus}>
+          Gist exists but isn&apos;t public. Make it public so the contract
+          can read it.
+        </CheckRow>
+      );
+    }
+    if (g.kind === "wrong_owner") {
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          This gist is owned by{" "}
+          <span className="font-mono">{g.actualOwner}</span>, not the login
+          you typed.
+        </CheckRow>
+      );
+    }
+    if (g.kind === "missing_body") {
+      return (
+        <CheckRow status={"fail" as CheckStatus}>
+          Gist body doesn&apos;t contain{" "}
+          <span className="font-mono break-all">{g.expected}</span>. Copy the
+          line above into the gist exactly.
+        </CheckRow>
+      );
+    }
+    if (g.kind === "found") {
+      if (!hasWallet) {
+        return (
+          <CheckRow status={"warn" as CheckStatus}>
+            Gist looks valid. Connect a wallet to verify the body matches you.
+          </CheckRow>
+        );
+      }
+      return (
+        <CheckRow status={"pass" as CheckStatus}>
+          Gist is public, owned by{" "}
+          <span className="font-mono">{g.owner}</span>, and contains the proof
+          line. Ready to enroll.
+        </CheckRow>
+      );
+    }
+    return null;
+  })();
+
+  return (
+    <div className="mt-5 flex flex-col gap-2">
+      {repoRow}
+      {gistRow}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// After-success next step
+// ---------------------------------------------------------------------------
+function NextStep({ slug }: { slug: string }) {
+  if (!slug) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-3">
+      <a
+        href="/claim"
+        className="inline-flex items-center gap-1 text-sm text-(--accent-driprose) hover:text-(--accent-driprose-hover) underline underline-offset-4"
+      >
+        Watch your /claim balance
+        <ArrowRight aria-hidden className="w-3.5 h-3.5" />
+      </a>
+      <a
+        href={`/dashboard/${slug}`}
+        className="inline-flex items-center gap-1 text-sm text-(--ink-muted) hover:text-(--accent-driprose) underline underline-offset-4"
+      >
+        See {slug} on the dashboard
+        <ArrowRight aria-hidden className="w-3.5 h-3.5" />
+      </a>
+    </div>
   );
 }

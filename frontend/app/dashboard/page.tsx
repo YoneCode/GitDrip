@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { useViewTransition } from "@/hooks/use-view-transition";
 import { usePoll } from "@/hooks/use-poll";
+import { useWallet } from "@/hooks/use-wallet";
 import { nextDepositId } from "@/lib/contract";
+import { getRepoActivity, type ProfileEntry } from "@/lib/profile";
 
 const EXAMPLES = [
   { slug: "genlayerlabs/genvm", desc: "GenLayer's intelligent contract VM" },
@@ -18,6 +19,7 @@ type GhRepo = { full_name: string; description: string | null; stargazers_count:
 
 export default function DashboardIndex() {
   const navigate = useViewTransition();
+  const { address: addr } = useWallet();
   const [q, setQ] = useState("");
   const [suggestions, setSuggestions] = useState<GhRepo[]>([]);
   const [searching, setSearching] = useState(false);
@@ -25,6 +27,12 @@ export default function DashboardIndex() {
   const lastDepositId = usePoll(() => nextDepositId(), 8000);
   const prevDepositRef = useRef<bigint | null>(null);
   const [tick, setTick] = useState(false);
+  const [activity, setActivity] = useState<ProfileEntry[]>([]);
+
+  // Read profile entries on wallet change
+  useEffect(() => {
+    setActivity(getRepoActivity(addr));
+  }, [addr]);
 
   // Show a brief "+1 deposit" pulse when next_deposit_id ticks up
   useEffect(() => {
@@ -119,6 +127,8 @@ export default function DashboardIndex() {
             </div>
           </form>
 
+          <YourReposRail activity={activity} hasWallet={!!addr} navigate={navigate} />
+
           {/* Live GitHub suggestions */}
           {suggestions.length > 0 && (
             <ul
@@ -191,5 +201,75 @@ export default function DashboardIndex() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// YourReposRail — render repos this wallet has registered or enrolled in,
+// grouped by role. Skipped when there is no activity yet.
+// ---------------------------------------------------------------------------
+function YourReposRail({
+  activity,
+  hasWallet,
+  navigate,
+}: {
+  activity: ProfileEntry[];
+  hasWallet: boolean;
+  navigate: (href: string) => void;
+}) {
+  if (!hasWallet || activity.length === 0) return null;
+
+  const maintainer = activity.filter((a) => a.role === "maintainer");
+  const contributor = activity.filter((a) => a.role === "contributor");
+
+  return (
+    <section className="mt-10 border border-(--rule) rounded-md p-5 bg-(--surface-card)">
+      <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
+        Your Repos
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        {maintainer.length > 0 && (
+          <div>
+            <p className="text-xs uppercase tracking-wider text-(--ink-faint) mb-2 font-mono">
+              maintainer
+            </p>
+            <ul className="space-y-1.5">
+              {maintainer.map((e) => (
+                <li key={`m-${e.slug}`}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/dashboard/${e.slug}`)}
+                    className="font-mono text-sm text-(--ink-body) hover:text-(--accent-driprose) underline-offset-4 hover:underline truncate w-full text-left focus:outline-none focus-visible:text-(--accent-driprose)"
+                  >
+                    {e.slug}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {contributor.length > 0 && (
+          <div>
+            <p className="text-xs uppercase tracking-wider text-(--ink-faint) mb-2 font-mono">
+              contributor
+            </p>
+            <ul className="space-y-1.5">
+              {contributor.map((e) => (
+                <li key={`c-${e.slug}`}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/dashboard/${e.slug}`)}
+                    className="font-mono text-sm text-(--ink-body) hover:text-(--accent-driprose) underline-offset-4 hover:underline truncate w-full text-left focus:outline-none focus-visible:text-(--accent-driprose)"
+                  >
+                    {e.slug}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
