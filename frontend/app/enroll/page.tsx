@@ -14,9 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
+import { TxStatusPill } from "@/components/tx-status-pill";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 import { humanError } from "@/lib/errors";
+import { useTypewriter } from "@/hooks/use-typewriter";
+import { useTxStatus } from "@/hooks/use-tx-status";
 
 export default function EnrollPage() {
   const { ready, login, address: addr } = useWallet();
@@ -37,6 +40,8 @@ export default function EnrollPage() {
     addr && slug
       ? `gitdrip:${slug}:${addr.toLowerCase()}`
       : "gitdrip:<owner/repo>:<your-wallet>";
+  const typedGist = useTypewriter(gistBody, 600);
+  const txStatus = useTxStatus(txHash);
 
   const copyGist = () => {
     void navigator.clipboard.writeText(gistBody);
@@ -79,6 +84,9 @@ export default function EnrollPage() {
 
   return (
     <>
+      {(submitting || (txStatus && (txStatus.stage === "pending" || txStatus.stage === "submitting"))) && (
+        <div className="top-progress" aria-hidden />
+      )}
       <SiteHeader />
       <main className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
         <div className="max-w-5xl">
@@ -168,7 +176,12 @@ export default function EnrollPage() {
                 </button>
               </div>
               <pre className="px-6 py-8 md:px-10 md:py-10 font-mono text-lg md:text-2xl leading-[1.6] text-(--ink-display) overflow-x-auto break-all">
-                <code>{gistBody}</code>
+                <code>
+                  {typedGist}
+                  {typedGist.length < gistBody.length && (
+                    <span className="inline-block w-[0.5ch] h-[1em] bg-(--accent-driprose) align-middle animate-pulse ml-0.5" />
+                  )}
+                </code>
               </pre>
             </div>
             <p className="mt-4 text-sm text-(--ink-muted) max-w-[60ch]">
@@ -255,9 +268,12 @@ export default function EnrollPage() {
               </p>
             )}
             {txHash && (
-              <p className="mt-4 text-sm text-(--ink-body)" aria-live="polite">
-                submitted · <TxLink hash={txHash} /> · waiting for validators...
-              </p>
+              <div className="mt-6 border-t border-(--rule) pt-5 flex flex-col gap-3" aria-live="polite">
+                <TxStatusPill status={txStatus} />
+                <span className="text-sm text-(--ink-muted)">
+                  tx · <TxLink hash={txHash} />
+                </span>
+              </div>
             )}
           </div>
         </div>

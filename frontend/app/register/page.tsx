@@ -14,9 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
+import { TxStatusPill } from "@/components/tx-status-pill";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 import { humanError } from "@/lib/errors";
+import { useTypewriter } from "@/hooks/use-typewriter";
+import { useTxStatus } from "@/hooks/use-tx-status";
 
 export default function RegisterPage() {
   const { ready, login, address: addr } = useWallet();
@@ -28,7 +31,9 @@ export default function RegisterPage() {
   const [copied, setCopied] = useState(false);
 
   const walletLine = addr ? addr.toLowerCase() : "<connect wallet first>";
+  const typedWallet = useTypewriter(walletLine, 600);
   const jsonTemplate = `{\n  "maintainer_wallet": "${walletLine}"\n}`;
+  const txStatus = useTxStatus(txHash);
 
   const copyTemplate = () => {
     void navigator.clipboard.writeText(jsonTemplate);
@@ -67,6 +72,9 @@ export default function RegisterPage() {
 
   return (
     <>
+      {(submitting || (txStatus && (txStatus.stage === "pending" || txStatus.stage === "submitting"))) && (
+        <div className="top-progress" aria-hidden />
+      )}
       <SiteHeader />
       <main className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
         <div className="max-w-5xl">
@@ -145,7 +153,11 @@ export default function RegisterPage() {
                   </span>
                   {": "}
                   <span className="text-(--ink-body)">
-                    &quot;{walletLine}&quot;
+                    &quot;{typedWallet}
+                    {typedWallet.length < walletLine.length && (
+                      <span className="inline-block w-[0.5ch] h-[1em] bg-(--accent-driprose) align-middle animate-pulse ml-0.5" />
+                    )}
+                    &quot;
                   </span>
                   {`\n}`}
                 </code>
@@ -229,9 +241,12 @@ export default function RegisterPage() {
               </p>
             )}
             {txHash && (
-              <p className="mt-4 text-sm text-(--ink-body)" aria-live="polite">
-                submitted · <TxLink hash={txHash} /> · waiting for validators...
-              </p>
+              <div className="mt-6 border-t border-(--rule) pt-5 flex flex-col gap-3" aria-live="polite">
+                <TxStatusPill status={txStatus} />
+                <span className="text-sm text-(--ink-muted)">
+                  tx · <TxLink hash={txHash} />
+                </span>
+              </div>
             )}
           </div>
         </div>

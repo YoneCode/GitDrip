@@ -8,9 +8,12 @@ import { AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeiAmount } from "@/components/wei-amount";
 import { TxLink } from "@/components/tx-link";
+import { TxStatusPill } from "@/components/tx-status-pill";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { claim, getPending } from "@/lib/contract";
 import { humanError } from "@/lib/errors";
+import { useCountUp } from "@/hooks/use-count-up";
+import { useTxStatus } from "@/hooks/use-tx-status";
 
 export default function ClaimPage() {
   const { ready, authenticated, login, address: addr } = useWallet();
@@ -20,6 +23,9 @@ export default function ClaimPage() {
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const animatedPending = useCountUp(pending ?? 0n);
+  const txStatus = useTxStatus(txHash);
 
   useEffect(() => {
     if (!addr) { setPending(null); return; }
@@ -47,17 +53,20 @@ export default function ClaimPage() {
   };
 
   const hasFunds = pending !== null && pending > 0n;
+  const showTopBar = loading || submitting || (txStatus && (txStatus.stage === "pending" || txStatus.stage === "submitting"));
 
   return (
     <>
+      {showTopBar && <div className="top-progress" aria-hidden />}
       <SiteHeader />
       <main className="px-6 md:px-12 lg:px-20 py-20 md:py-28">
         <div className="max-w-3xl">
-          {/* Lead with the number — the user came here for this */}
           {!authenticated ? (
             <section>
-              <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6"
-                style={{ fontFamily: "'Instrument Serif', serif" }}>
+              <h1
+                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
                 Claim Your Payout
               </h1>
               <p className="text-lg text-(--ink-muted) mb-8 max-w-[45ch]">
@@ -83,10 +92,10 @@ export default function ClaimPage() {
               </p>
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-10 border-b border-(--rule) pb-8">
                 <p
-                  className="text-(--ink-display) tracking-tight leading-none text-6xl md:text-7xl lg:text-8xl"
+                  className="text-(--ink-display) tracking-tight leading-none text-6xl md:text-7xl lg:text-8xl tabular-nums"
                   style={{ fontFamily: "'Instrument Serif', serif" }}
                 >
-                  <WeiAmount value={pending!} fractionDigits={4} />
+                  <WeiAmount value={animatedPending} fractionDigits={4} />
                 </p>
                 <Button
                   onClick={onClaim}
@@ -111,20 +120,21 @@ export default function ClaimPage() {
               </p>
             </section>
           ) : (
-            /* Empty state — onboarding guidance */
             <section>
-              <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4"
-                style={{ fontFamily: "'Instrument Serif', serif" }}>
+              <h1
+                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
                 Nothing To Claim Yet
               </h1>
               <p className="text-lg text-(--ink-muted) mb-10 max-w-[50ch]">
                 Your balance fills after a distribution scores you above zero on a repo where you are enrolled.
               </p>
               <div className="border-t border-(--rule) pt-8 space-y-6">
-                <OnboardStep n="1" text="enroll in a registered repo" href="/enroll" />
-                <OnboardStep n="2" text="make commits that score above zero" />
-                <OnboardStep n="3" text="wait for the next distribution (every 7 days or per release)" />
-                <OnboardStep n="4" text="come back here and withdraw" />
+                <OnboardStep n="1" text="Enroll in a registered repo" href="/enroll" />
+                <OnboardStep n="2" text="Make commits that score above zero" />
+                <OnboardStep n="3" text="Wait for the next distribution (every 7 days or per release)" />
+                <OnboardStep n="4" text="Come back here and withdraw" />
               </div>
             </section>
           )}
@@ -136,9 +146,12 @@ export default function ClaimPage() {
             </p>
           )}
           {txHash && (
-            <p className="mt-6 text-sm text-(--ink-body)" aria-live="polite">
-              submitted · <TxLink hash={txHash} /> · waiting for validators...
-            </p>
+            <div className="mt-8 border-t border-(--rule) pt-6 flex flex-col gap-3" aria-live="polite">
+              <TxStatusPill status={txStatus} />
+              <span className="text-sm text-(--ink-muted)">
+                tx · <TxLink hash={txHash} />
+              </span>
+            </div>
           )}
         </div>
       </main>
