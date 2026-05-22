@@ -2,18 +2,23 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 import { Address } from "@/components/address";
 import { WeiAmount } from "@/components/wei-amount";
 import { ScoreBar } from "@/components/score-bar";
+import { TxLink } from "@/components/tx-link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
   getRepo,
   getRoster,
   getScoreLog,
+  sponsorRefund,
+  nextDepositId,
+  getDeposit,
   type RepoRecord,
   type ScoreSnapshot,
+  type Deposit,
 } from "@/lib/contract";
 import { formatDate, daysBetween } from "@/lib/format";
 import { explorerContract } from "@/lib/genlayer";
@@ -171,6 +176,8 @@ export default function RepoDashboard({
                     <ArrowRight aria-hidden className="w-4 h-4 ml-1.5" />
                   </Link>
                 </Button>
+
+                <RefundSection repoSlug={repoSlug} record={record} />
               </div>
 
               <div>
@@ -284,6 +291,121 @@ function Snapshot({
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+function RefundSection({
+  repoSlug,
+  record,
+}: {
+  repoSlug: string;
+  record: RepoRecord;
+}) {
+  const [addr, setAddr] = useState<string | null>(null);
+  const [deposits, setDeposits] = useState<(Deposit & { id: bigint })[]>([]);
+  const [refunding, setRefunding] = useState<bigint | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const eth = window.ethereum;
+    if (!eth) return;
+    eth
+      .request({ method: "eth_accounts" })
+      .then((accounts) => {
+        const list = accounts as string[];
+        if (list[0]) setAddr(list[0].toLowerCase());
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load user's deposits for this repo
+  useEffect(() => {
+    if (!addr) return;
+    let cancelled = false;
+    (async () => {
+      const max = await nextDepositId();
+      const mine: (Deposit & { id: bigint })[] = [];
+      for (let i = 0n; i < max && i < 50n; i++) {
+        const d = await getDeposit(i);
+        if (d && d.repo === repoSlug && d.sponsor === addr && !d.refunded) {
+          mine.push({ ...d, id: i });
+        }
+      }
+      if (!cancelled) setDeposits(mine);
+    })();
+    return () => { cancelled = true; };
+  }, [addr, repoSlug, txHash]);
+
+  const DORMANT_SEC = 180 * 24 * 3600;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const lastDist = record.last_distribution_unix || record.period_start_unix;
+  const isDormant = nowSec - lastDist >= DORMANT_SEC;
+
+  if (!addr || deposits.length === 0) return null;
+
+  const onRefund = async (depositId: bigint) => {
+    setError(null);
+    setTxHash(null);
+    try {
+      setRefunding(depositId);
+      const tx = await sponsorRefund(depositId);
+      const hash = typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
+      if (hash) setTxHash(hash);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRefunding(null);
+    }
+  };
+
+  return (
+    <div className="mt-8 border-t border-(--rule) pt-6">
+      <h3 className="font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-3">
+        your deposits
+      </h3>
+      {!isDormant && (
+        <p className="text-sm text-(--ink-muted) mb-3">
+          refundable after 180 days with no distribution
+        </p>
+      )}
+      <ul className="space-y-2 text-sm">
+        {deposits.map((d) => (
+          <li
+            key={d.id.toString()}
+            className="flex items-center justify-between gap-3"
+          >
+            <span className="tabular-nums">
+              <WeiAmount value={BigInt(d.amount)} fractionDigits={4} />
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!isDormant || refunding !== null}
+              onClick={() => onRefund(d.id)}
+              className="text-xs"
+            >
+              {refunding === d.id ? (
+                <Loader2 aria-hidden className="w-3 h-3 animate-spin" />
+              ) : (
+                "refund"
+              )}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-(--status-bad) flex items-center gap-1">
+          <AlertTriangle aria-hidden className="w-3 h-3" /> {error}
+        </p>
+      )}
+      {txHash && (
+        <p className="mt-2 text-xs text-(--ink-body)" aria-live="polite">
+          refund submitted · <TxLink hash={txHash} />
+        </p>
+      )}
     </div>
   );
 }

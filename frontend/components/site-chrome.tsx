@@ -18,6 +18,18 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-6 text-sm text-(--ink-muted)">
           <Link
+            href="/register"
+            className="hover:text-(--ink-body) focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            register
+          </Link>
+          <Link
+            href="/enroll"
+            className="hover:text-(--ink-body) focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          >
+            enroll
+          </Link>
+          <Link
             href="/claim"
             className="hover:text-(--ink-body) focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
