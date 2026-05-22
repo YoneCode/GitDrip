@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+import { useWallet } from "@/hooks/use-wallet";
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
@@ -8,28 +10,15 @@ import { WeiAmount } from "@/components/wei-amount";
 import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { claim, getPending } from "@/lib/contract";
-import { connectWallet } from "@/lib/genlayer";
 
 export default function ClaimPage() {
-  const [addr, setAddr] = useState<`0x${string}` | null>(null);
+  const { ready, authenticated, login, address: addr } = useWallet();
+
   const [pending, setPending] = useState<bigint | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const eth = window.ethereum;
-    if (!eth) return;
-    eth
-      .request({ method: "eth_accounts" })
-      .then((accounts) => {
-        const list = accounts as string[];
-        if (list[0]) setAddr(list[0] as `0x${string}`);
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!addr) {
@@ -42,17 +31,8 @@ export default function ClaimPage() {
       .then((p) => !cancelled && setPending(p))
       .catch(() => !cancelled && setPending(null))
       .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [addr, txHash]);
-
-  const onConnect = async () => {
-    setError(null);
-    const a = await connectWallet();
-    if (a) setAddr(a);
-    else setError("wallet not available");
-  };
 
   const onClaim = async () => {
     setError(null);
@@ -87,13 +67,16 @@ export default function ClaimPage() {
         </p>
 
         <div className="mt-12">
-          {!addr ? (
+          {!authenticated ? (
             <Button
-              onClick={onConnect}
+              onClick={login}
+              disabled={!ready}
               className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-11 px-6"
             >
               connect wallet
             </Button>
+          ) : !addr ? (
+            <p className="text-(--ink-muted)">connecting wallet…</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 md:gap-12 items-end border-y border-(--rule) py-10">
               <div>

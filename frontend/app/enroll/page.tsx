@@ -1,40 +1,24 @@
 "use client";
+export const dynamic = "force-dynamic";
+import { useWallet } from "@/hooks/use-wallet";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { client, connectWallet, CONTRACT_ADDRESS } from "@/lib/genlayer";
+import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 
 export default function EnrollPage() {
-  const [addr, setAddr] = useState<`0x${string}` | null>(null);
+  const { ready, login, address: addr } = useWallet();
   const [repo, setRepo] = useState("");
-  const [login, setLogin] = useState("");
+  const [ghLogin, setGhLogin] = useState("");
   const [gistId, setGistId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const eth = window.ethereum;
-    if (!eth) return;
-    eth
-      .request({ method: "eth_accounts" })
-      .then((accounts) => {
-        const list = accounts as string[];
-        if (list[0]) setAddr(list[0] as `0x${string}`);
-      })
-      .catch(() => {});
-  }, []);
-
-  const onConnect = async () => {
-    const a = await connectWallet();
-    if (a) setAddr(a);
-  };
 
   const slug = repo.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "");
   const gistBody = addr && slug
@@ -54,7 +38,7 @@ export default function EnrollPage() {
       setError("enter owner/repo");
       return;
     }
-    if (!login.trim()) {
+    if (!ghLogin.trim()) {
       setError("enter your github login");
       return;
     }
@@ -67,7 +51,7 @@ export default function EnrollPage() {
       const tx = await client().writeContract({
         address: CONTRACT_ADDRESS,
         functionName: "enroll_contributor",
-        args: [slug, login.trim().toLowerCase(), gistId.trim()],
+        args: [slug, ghLogin.trim().toLowerCase(), gistId.trim()],
         value: 0n,
       });
       const hash = typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
@@ -104,7 +88,8 @@ export default function EnrollPage() {
             <p className="font-mono text-sm text-(--ink-body)">{addr}</p>
           ) : (
             <Button
-              onClick={onConnect}
+              onClick={login}
+              disabled={!ready}
               className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose)"
             >
               connect
@@ -174,8 +159,8 @@ export default function EnrollPage() {
               </label>
               <Input
                 id="login"
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
+                value={ghLogin}
+                onChange={(e) => setGhLogin(e.target.value)}
                 placeholder="your-github-username"
                 className="font-mono"
               />

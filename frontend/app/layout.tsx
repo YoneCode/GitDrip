@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const geist = Geist({
@@ -38,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`}
     >
-      <body>{children}</body>
+      <body><Providers>{children}</Providers></body>
     </html>
   );
 }

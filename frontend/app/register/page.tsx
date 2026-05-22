@@ -1,39 +1,23 @@
 "use client";
+export const dynamic = "force-dynamic";
+import { useWallet } from "@/hooks/use-wallet";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { client, connectWallet, CONTRACT_ADDRESS } from "@/lib/genlayer";
+import { client, CONTRACT_ADDRESS } from "@/lib/genlayer";
 
 export default function RegisterPage() {
-  const [addr, setAddr] = useState<`0x${string}` | null>(null);
+  const { ready, login, address: addr } = useWallet();
   const [repo, setRepo] = useState("");
   const [token, setToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const eth = window.ethereum;
-    if (!eth) return;
-    eth
-      .request({ method: "eth_accounts" })
-      .then((accounts) => {
-        const list = accounts as string[];
-        if (list[0]) setAddr(list[0] as `0x${string}`);
-      })
-      .catch(() => {});
-  }, []);
-
-  const onConnect = async () => {
-    const a = await connectWallet();
-    if (a) setAddr(a);
-  };
 
   const jsonTemplate = addr
     ? JSON.stringify({ maintainer_wallet: addr.toLowerCase() }, null, 2)
@@ -95,7 +79,8 @@ export default function RegisterPage() {
             <p className="font-mono text-sm text-(--ink-body)">{addr}</p>
           ) : (
             <Button
-              onClick={onConnect}
+              onClick={login}
+              disabled={!ready}
               className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose)"
             >
               connect

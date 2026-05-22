@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import { useWallet } from "@/hooks/use-wallet";
 import Link from "next/link";
 import { ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 import { Address } from "@/components/address";
@@ -302,24 +303,12 @@ function RefundSection({
   repoSlug: string;
   record: RepoRecord;
 }) {
-  const [addr, setAddr] = useState<string | null>(null);
+  const { address } = useWallet();
+  const addr = address?.toLowerCase() ?? null;
   const [deposits, setDeposits] = useState<(Deposit & { id: bigint })[]>([]);
   const [refunding, setRefunding] = useState<bigint | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const eth = window.ethereum;
-    if (!eth) return;
-    eth
-      .request({ method: "eth_accounts" })
-      .then((accounts) => {
-        const list = accounts as string[];
-        if (list[0]) setAddr(list[0].toLowerCase());
-      })
-      .catch(() => {});
-  }, []);
 
   // Load user's deposits for this repo
   useEffect(() => {
