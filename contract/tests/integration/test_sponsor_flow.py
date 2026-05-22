@@ -14,7 +14,7 @@ from gltest.assertions import tx_execution_succeeded, tx_execution_failed
 
 def test_initial_state_is_empty():
     """A fresh contract has zero deposits and empty repos."""
-    factory = get_contract_factory("GitDrip", contract_file="gitdrip.py")
+    factory = get_contract_factory(contract_name="GitDrip")
     contract = factory.deploy(args=[])
 
     # next_deposit starts at 0
@@ -31,7 +31,7 @@ def test_initial_state_is_empty():
 
 def test_sponsor_on_unregistered_repo_fails():
     """Sponsoring a repo that hasn't been registered must revert."""
-    factory = get_contract_factory("GitDrip", contract_file="gitdrip.py")
+    factory = get_contract_factory(contract_name="GitDrip")
     contract = factory.deploy(args=[])
 
     tx = contract.sponsor(args=["test/fake-repo"]).transact(
@@ -44,7 +44,7 @@ def test_sponsor_on_unregistered_repo_fails():
 
 def test_pending_balance_starts_at_zero():
     """Any address should have zero pending before any distribution."""
-    factory = get_contract_factory("GitDrip", contract_file="gitdrip.py")
+    factory = get_contract_factory(contract_name="GitDrip")
     contract = factory.deploy(args=[])
     account = get_default_account()
 
