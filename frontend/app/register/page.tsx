@@ -3,7 +3,14 @@ export const dynamic = "force-dynamic";
 import { useWallet } from "@/hooks/use-wallet";
 
 import { useState } from "react";
-import { AlertTriangle, ArrowRight, Check, Copy, Loader2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  Copy,
+  Loader2,
+  Wallet,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TxLink } from "@/components/tx-link";
@@ -20,9 +27,8 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const jsonTemplate = addr
-    ? JSON.stringify({ maintainer_wallet: addr.toLowerCase() }, null, 2)
-    : '{\n  "maintainer_wallet": "<connect wallet first>"\n}';
+  const walletLine = addr ? addr.toLowerCase() : "<connect wallet first>";
+  const jsonTemplate = `{\n  "maintainer_wallet": "${walletLine}"\n}`;
 
   const copyTemplate = () => {
     void navigator.clipboard.writeText(jsonTemplate);
@@ -33,7 +39,10 @@ export default function RegisterPage() {
   const onRegister = async () => {
     setError(null);
     setTxHash(null);
-    const slug = repo.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, "");
+    const slug = repo
+      .trim()
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/\/$/, "");
     if (!slug || !slug.includes("/")) {
       setError("enter owner/repo (e.g. alice/cool-cli)");
       return;
@@ -46,7 +55,8 @@ export default function RegisterPage() {
         args: [slug, token.trim()],
         value: 0n,
       });
-      const hash = typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
+      const hash =
+        typeof tx === "string" ? tx : (tx?.hash ?? tx?.transactionHash);
       if (hash) setTxHash(hash);
     } catch (e: unknown) {
       setError(humanError(e instanceof Error ? e.message : String(e)));
@@ -58,136 +68,174 @@ export default function RegisterPage() {
   return (
     <>
       <SiteHeader />
-      <main className="px-6 md:px-12 lg:px-20 py-20"><div className="max-w-3xl">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
-          maintainer
-        </p>
-        <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95]">
-          register your repo
-        </h1>
-        <p className="mt-6 text-lg text-(--ink-muted) max-w-[50ch]">
-          Three steps: connect wallet, commit a proof file to your repo,
-          then click verify. The contract fetches the file and checks that
-          the wallet matches.
-        </p>
-
-        {/* Step 1: connect */}
-        <section className="mt-12">
-          <h2 className="font-display text-xl text-(--ink-display) mb-3">
-            1. connect wallet
-          </h2>
-          {addr ? (
-            <p className="font-mono text-sm text-(--ink-body)">{addr}</p>
-          ) : (
-            <Button
-              onClick={login}
-              disabled={!ready}
-              className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose)"
-            >
-              connect
-            </Button>
-          )}
-        </section>
-
-        {/* Step 2: commit .gitdrip.json */}
-        <section className="mt-10">
-          <h2 className="font-display text-xl text-(--ink-display) mb-3">
-            2. commit{" "}
-            <code className="font-mono text-base">.gitdrip.json</code> to
-            your repo root
-          </h2>
-          <div className="relative">
-            <pre className="bg-(--surface-sunken) border border-(--rule) rounded-md p-4 font-mono text-sm text-(--ink-body) overflow-x-auto">
-              {jsonTemplate}
-            </pre>
-            <button
-              type="button"
-              onClick={copyTemplate}
-              className="absolute top-3 right-3 p-1.5 rounded hover:bg-(--surface-card) focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="copy template"
-            >
-              {copied ? (
-                <Check className="w-4 h-4 text-(--status-good)" />
-              ) : (
-                <Copy className="w-4 h-4 text-(--ink-faint)" />
-              )}
-            </button>
-          </div>
-          <p className="mt-2 text-sm text-(--ink-muted)">
-            Push to the default branch. The contract fetches
-            raw.githubusercontent.com/owner/repo/HEAD/.gitdrip.json.
+      <main className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
+        <div className="max-w-5xl">
+          {/* Tag + headline */}
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
+            maintainer
           </p>
-        </section>
-
-        {/* Step 3: call register_repo */}
-        <section className="mt-10">
-          <h2 className="font-display text-xl text-(--ink-display) mb-3">
-            3. verify and register
-          </h2>
-          <div className="space-y-3 max-w-md">
-            <div>
-              <label
-                htmlFor="repo"
-                className="block font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-1"
-              >
-                repo slug
-              </label>
-              <Input
-                id="repo"
-                value={repo}
-                onChange={(e) => setRepo(e.target.value)}
-                placeholder="owner/repo"
-                className="font-mono"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="token"
-                className="block font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-1"
-              >
-                github token (optional, raises api limit)
-              </label>
-              <Input
-                id="token"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="ghp_..."
-                className="font-mono"
-              />
-            </div>
-          </div>
-
-          {error && (
-            <p role="alert" className="mt-3 inline-flex items-center gap-2 text-sm text-(--status-bad)">
-              <AlertTriangle aria-hidden className="w-4 h-4" />
-              {error}
-            </p>
-          )}
-          {txHash && (
-            <p className="mt-3 text-sm text-(--ink-body)" aria-live="polite">
-              submitted · <TxLink hash={txHash} />
-            </p>
-          )}
-
-          <Button
-            onClick={onRegister}
-            disabled={submitting || !addr}
-            className="mt-4 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-11 px-6"
+          <h1
+            className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95]"
+            style={{ fontFamily: "'Instrument Serif', serif" }}
           >
-            {submitting ? (
+            commit this file.
+            <br />
+            <span className="text-(--ink-muted)">we verify the rest.</span>
+          </h1>
+
+          {/* Wallet status — single line, not a step */}
+          <div className="mt-10 flex items-center gap-3 text-sm">
+            <Wallet
+              aria-hidden
+              className={`w-4 h-4 ${addr ? "text-(--accent-driprose)" : "text-(--ink-faint)"}`}
+            />
+            {addr ? (
               <>
-                <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
-                verifying
+                <span className="text-(--ink-muted) font-mono">connected</span>
+                <span className="font-mono text-(--ink-body)">{addr}</span>
               </>
             ) : (
               <>
-                register
-                <ArrowRight aria-hidden className="w-4 h-4 ml-1.5" />
+                <span className="text-(--ink-muted)">no wallet connected</span>
+                <Button
+                  size="sm"
+                  onClick={login}
+                  disabled={!ready}
+                  className="ml-2 h-7 px-3 text-xs bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose)"
+                >
+                  connect
+                </Button>
               </>
             )}
-          </Button>
-        </section>
-      </div></main>
+          </div>
+
+          {/* JSON TEMPLATE — the centerpiece */}
+          <div className="mt-12">
+            <div className="overflow-hidden border border-(--rule-strong) bg-(--surface-sunken) rounded-md">
+              {/* Filename header bar */}
+              <div className="flex items-center justify-between border-b border-(--rule) px-5 py-3 bg-(--surface-card)">
+                <span className="font-mono text-sm text-(--ink-body)">
+                  .gitdrip.json
+                </span>
+                <button
+                  type="button"
+                  onClick={copyTemplate}
+                  className="inline-flex items-center gap-1.5 text-xs font-mono text-(--ink-muted) hover:text-(--accent-driprose) transition-colors px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="copy template"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-(--status-good)" />
+                      copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      copy
+                    </>
+                  )}
+                </button>
+              </div>
+              {/* The actual code, big and breathable */}
+              <pre className="px-6 py-8 md:px-10 md:py-10 font-mono text-lg md:text-2xl leading-[1.6] text-(--ink-display) overflow-x-auto tabular-nums">
+                <code>
+                  {`{\n  `}
+                  <span className="text-(--accent-driprose)">
+                    &quot;maintainer_wallet&quot;
+                  </span>
+                  {": "}
+                  <span className="text-(--ink-body)">
+                    &quot;{walletLine}&quot;
+                  </span>
+                  {`\n}`}
+                </code>
+              </pre>
+            </div>
+            <p className="mt-4 text-sm text-(--ink-muted) max-w-[60ch]">
+              push to the default branch root. the contract fetches{" "}
+              <span className="font-mono text-(--ink-body)">
+                raw.githubusercontent.com/&lt;owner&gt;/&lt;repo&gt;/HEAD/.gitdrip.json
+              </span>{" "}
+              during verification.
+            </p>
+          </div>
+
+          {/* Submit form — secondary visual weight */}
+          <div className="mt-16 border-t border-(--rule) pt-10">
+            <h2
+              className="text-2xl text-(--ink-display) mb-6"
+              style={{ fontFamily: "'Instrument Serif', serif" }}
+            >
+              once it&apos;s pushed, register on-chain
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+              <div>
+                <label
+                  htmlFor="repo"
+                  className="block font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-2"
+                >
+                  repo slug
+                </label>
+                <Input
+                  id="repo"
+                  value={repo}
+                  onChange={(e) => setRepo(e.target.value)}
+                  placeholder="owner/repo"
+                  className="h-11 font-mono bg-(--surface-sunken) border-(--rule)"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="token"
+                  className="block font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-2"
+                >
+                  github token (optional)
+                </label>
+                <Input
+                  id="token"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="ghp_..."
+                  className="h-11 font-mono bg-(--surface-sunken) border-(--rule)"
+                />
+              </div>
+            </div>
+
+            <Button
+              onClick={onRegister}
+              disabled={submitting || !addr}
+              className="mt-6 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
+                  verifying on-chain...
+                </>
+              ) : (
+                <>
+                  register repo
+                  <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
+
+            {error && (
+              <p
+                role="alert"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-(--status-bad)"
+              >
+                <AlertTriangle aria-hidden className="w-4 h-4" />
+                {error}
+              </p>
+            )}
+            {txHash && (
+              <p className="mt-4 text-sm text-(--ink-body)" aria-live="polite">
+                submitted · <TxLink hash={txHash} /> · waiting for validators...
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
       <SiteFooter />
     </>
   );
