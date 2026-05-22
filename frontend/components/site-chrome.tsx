@@ -55,6 +55,7 @@ export function SiteHeader() {
 function NavLinks({ onClick }: { onClick?: () => void }) {
   const links = [
     { href: "/", label: "home" },
+    { href: "/vs", label: "compare" },
     { href: "/register", label: "register" },
     { href: "/enroll", label: "enroll" },
     { href: "/claim", label: "claim" },
