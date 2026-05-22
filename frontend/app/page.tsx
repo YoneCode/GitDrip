@@ -9,22 +9,22 @@ export default function Page() {
       <SiteHeader />
 
       <main>
-        {/* Hero — single column, centered editorial. */}
-        <section className="mx-auto max-w-[680px] px-6 pt-24 pb-20 text-center">
+        {/* Hero — single column, editorial. No card, no metric. */}
+        <section className="mx-auto max-w-3xl px-6 pt-24 pb-20">
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-8">
             on-chain · sponsorship · ai-scored
           </p>
           <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(2.4rem,5vw,3.5rem)] leading-[1.05] tracking-tight">
             Drips for code that earns its weight.
           </h1>
-          <p className="mt-8 text-lg leading-relaxed text-(--ink-body) max-w-[55ch] mx-auto">
+          <p className="mt-8 text-lg leading-relaxed text-(--ink-body) max-w-[55ch]">
             GitDrip splits open-source sponsorship pools by the substance of
             each commit, judged by AI validators on chain. A typo gets one. A
             new feature gets fifty. Bots get nothing. The score is public,
             the payout is automatic, the rule is the contract.
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-3 justify-center">
+          <div className="mt-10 flex flex-wrap gap-3">
             <Button
               asChild
               className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-11 px-5"

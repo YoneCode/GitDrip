@@ -21,14 +21,14 @@ export default function DashboardIndex() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-[680px] px-6 py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-3 text-center">
+      <main className="mx-auto max-w-3xl px-6 py-20">
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-3">
           dashboard
         </p>
-        <h1 className="font-display text-4xl text-(--ink-display) tracking-tight text-center">
+        <h1 className="font-display text-4xl text-(--ink-display) tracking-tight">
           look up a repo
         </h1>
-        <p className="mt-3 text-(--ink-muted) max-w-[60ch] mx-auto text-center">
+        <p className="mt-3 text-(--ink-muted) max-w-[60ch]">
           Pool size, scoring history, and per-contributor splits. Real on-chain
           data, no sign-in needed.
         </p>
