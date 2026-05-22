@@ -57,14 +57,14 @@ export default function RegisterPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-6 py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-3">
+      <main className="px-6 md:px-12 lg:px-20 py-20"><div className="max-w-3xl">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
           maintainer
         </p>
-        <h1 className="font-display text-4xl text-(--ink-display) tracking-tight">
+        <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95]">
           register your repo
         </h1>
-        <p className="mt-3 text-(--ink-muted) max-w-[60ch]">
+        <p className="mt-6 text-lg text-(--ink-muted) max-w-[50ch]">
           Three steps: connect wallet, commit a proof file to your repo,
           then click verify. The contract fetches the file and checks that
           the wallet matches.
@@ -186,7 +186,7 @@ export default function RegisterPage() {
             )}
           </Button>
         </section>
-      </main>
+      </div></main>
       <SiteFooter />
     </>
   );

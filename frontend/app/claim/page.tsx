@@ -54,14 +54,14 @@ export default function ClaimPage() {
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-3xl px-6 py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-3">
+      <main className="px-6 md:px-12 lg:px-20 py-20"><div className="max-w-3xl">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-4">
           claim a payout
         </p>
-        <h1 className="font-display text-4xl text-(--ink-display) tracking-tight">
+        <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95]">
           your pending balance
         </h1>
-        <p className="mt-3 text-(--ink-muted) max-w-[60ch]">
+        <p className="mt-6 text-lg text-(--ink-muted) max-w-[50ch]">
           The contract holds your share until you withdraw. One transaction,
           all of it at once.
         </p>
@@ -145,7 +145,7 @@ export default function ClaimPage() {
             </p>
           )}
         </div>
-      </main>
+      </div></main>
 
       <SiteFooter />
     </>

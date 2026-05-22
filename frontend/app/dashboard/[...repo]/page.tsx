@@ -71,12 +71,12 @@ export default function RepoDashboard({
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-3">
+      <main className="px-6 md:px-12 lg:px-20 py-20"><div className="max-w-5xl">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-3">
           repo
         </p>
         <div className="flex items-baseline justify-between gap-4 flex-wrap">
-          <h1 className="font-display text-4xl text-(--ink-display) tracking-tight">
+          <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95]">
             {repoSlug}
           </h1>
           <a
@@ -198,7 +198,7 @@ export default function RepoDashboard({
             </section>
           </>
         )}
-      </main>
+      </div></main>
 
       <SiteFooter />
     </>

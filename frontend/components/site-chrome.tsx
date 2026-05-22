@@ -4,16 +4,16 @@ import { WalletButton } from "@/components/wallet-button";
 export function SiteHeader() {
   return (
     <header className="border-b border-(--rule)">
-      <div className="mx-auto max-w-5xl px-6 py-5 flex items-center justify-between">
+      <div className="px-6 md:px-12 lg:px-20 py-5 flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-baseline gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          className="inline-flex items-baseline gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
         >
-          <span className="font-display text-xl text-(--ink-display) font-semibold tracking-tight">
+          <span className="font-display text-2xl text-(--ink-display) font-semibold tracking-tight">
             GitDrip
           </span>
-          <span className="text-xs text-(--ink-faint) tabular-nums">
-            v1 · Bradbury testnet
+          <span className="text-xs text-(--ink-faint) font-mono">
+            bradbury testnet
           </span>
         </Link>
         <nav className="flex items-center gap-6 text-sm text-(--ink-muted)">
@@ -51,7 +51,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-(--rule)">
-      <div className="mx-auto max-w-5xl px-6 py-8 flex flex-wrap items-baseline justify-between gap-4 text-sm text-(--ink-muted)">
+      <div className="px-6 md:px-12 lg:px-20 py-8 flex flex-wrap items-baseline justify-between gap-4 text-sm text-(--ink-muted)">
         <span>
           deployed on{" "}
           <a

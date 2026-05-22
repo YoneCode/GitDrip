@@ -9,100 +9,93 @@ export default function Page() {
       <SiteHeader />
 
       <main>
-        {/* Hero — single column, editorial. No card, no metric. */}
-        <section className="mx-auto max-w-3xl px-6 pt-24 pb-20">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-(--ink-faint) mb-8">
-            on-chain · sponsorship · ai-scored
-          </p>
-          <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(2.4rem,5vw,3.5rem)] leading-[1.05] tracking-tight">
-            Drips for code that earns its weight.
-          </h1>
-          <p className="mt-8 text-lg leading-relaxed text-(--ink-body) max-w-[55ch]">
-            GitDrip splits open-source sponsorship pools by the substance of
-            each commit, judged by AI validators on chain. A typo gets one. A
-            new feature gets fifty. Bots get nothing. The score is public,
-            the payout is automatic, the rule is the contract.
-          </p>
+        {/* Hero — full width, left-aligned, bold type */}
+        <section className="px-6 md:px-12 lg:px-20 pt-32 pb-24">
+          <div className="max-w-5xl">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-6">
+              on-chain sponsorship, ai-scored
+            </p>
+            <h1 className="font-display font-semibold text-(--ink-display) text-[clamp(3rem,7vw,5.5rem)] leading-[0.95] tracking-tight max-w-[14ch]">
+              fund the code that ships.
+            </h1>
+            <p className="mt-10 text-xl leading-relaxed text-(--ink-body) max-w-[52ch]">
+              sponsors deposit into a repo pool. every week, AI validators score
+              each contributor by the substance of their commits. the pool splits
+              proportionally. bots get zero. typos get one. features get fifty.
+            </p>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Button
-              asChild
-              className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-11 px-5"
-            >
-              <Link href="/sponsor/genlayerlabs/genvm">
-                sponsor a repo
-                <ArrowRight aria-hidden className="w-4 h-4 ml-1.5" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
-              className="h-11 px-5 hover:bg-(--surface-sunken)"
-            >
-              <Link href="/claim">claim a payout</Link>
-            </Button>
+            <div className="mt-12 flex gap-4">
+              <Button
+                asChild
+                className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base font-medium"
+              >
+                <Link href="/sponsor/genlayerlabs/genvm">
+                  sponsor a repo
+                  <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                className="h-12 px-7 text-base text-(--ink-body) hover:bg-(--surface-card) border border-(--rule)"
+              >
+                <Link href="/claim">claim payout</Link>
+              </Button>
+            </div>
           </div>
         </section>
 
         <hr />
 
-        {/* How it works — three steps as numbered prose, not three cards. */}
-        <section className="mx-auto max-w-3xl px-6 py-20">
-          <h2 className="font-display text-3xl text-(--ink-display) mb-10">
-            How a period works
-          </h2>
-          <ol className="space-y-10">
-            <Step
-              n={1}
-              title="A maintainer registers."
-              body={
-                "They commit `.gitdrip.json` to the repo with their wallet, " +
-                "then call register_repo. The contract fetches the file from " +
-                "raw.githubusercontent.com and accepts only if the wallets match."
-              }
-            />
-            <Step
-              n={2}
-              title="Sponsors deposit."
-              body={
-                "Anyone can sponsor a repo's pool. Each deposit is tracked " +
-                "individually so it can be refunded after 180 days of dormancy."
-              }
-            />
-            <Step
-              n={3}
-              title="Validators score, the pool splits."
-              body={
-                "Every seven days (or per release tag), GenLayer validators fetch " +
-                "each opted-in contributor's commits and diffs. An LLM scores them " +
-                "0–100 by substance. The pool splits proportionally and lands in " +
-                "each contributor's pending balance, ready to claim."
-              }
-            />
-          </ol>
+        {/* How it works — big numbered steps, left-aligned */}
+        <section className="px-6 md:px-12 lg:px-20 py-24">
+          <div className="max-w-5xl">
+            <h2 className="font-display text-4xl md:text-5xl text-(--ink-display) tracking-tight mb-16">
+              how it works
+            </h2>
+            <div className="space-y-16">
+              <Step
+                n="01"
+                title="maintainer registers"
+                body="commit .gitdrip.json with your wallet to the repo root. call register_repo. the contract verifies ownership via raw.githubusercontent.com."
+              />
+              <Step
+                n="02"
+                title="sponsors deposit"
+                body="anyone sends GLT to the repo pool. each deposit tracked individually. refundable after 180 days dormant."
+              />
+              <Step
+                n="03"
+                title="validators score, pool splits"
+                body="every 7 days, GenLayer validators fetch commits and diffs. LLM scores substance 0-100. pool distributes proportionally. contributors call claim()."
+              />
+            </div>
+          </div>
         </section>
 
         <hr />
 
-        {/* What makes it different. Comparison without a table on mobile. */}
-        <section className="mx-auto max-w-3xl px-6 py-20">
-          <h2 className="font-display text-3xl text-(--ink-display) mb-3">
-            Different from what came before
-          </h2>
-          <p className="text-(--ink-muted) max-w-[60ch]">
-            The split self-adjusts. That&apos;s the headline.
-          </p>
+        {/* Differentiator */}
+        <section className="px-6 md:px-12 lg:px-20 py-24">
+          <div className="max-w-5xl">
+            <h2 className="font-display text-4xl md:text-5xl text-(--ink-display) tracking-tight mb-6">
+              not like the others
+            </h2>
+            <p className="text-(--ink-muted) text-lg mb-12 max-w-[50ch]">
+              the split self-adjusts to real contribution. everything else is table stakes.
+            </p>
 
-          <dl className="mt-10 divide-y divide-(--rule) border-y border-(--rule)">
-            <Row k="GitHub Sponsors" v="Custodial. Monthly. Manual." />
-            <Row k="Gitcoin Grants" v="Round-based. Quadratic. Curated." />
-            <Row k="Drips Network" v="On-chain streams. Splits set by hand." />
-            <Row
-              k="GitDrip"
-              v="On-chain, continuous, splits self-adjust to each contributor's substance."
-              accent
-            />
-          </dl>
+            <div className="border border-(--rule) divide-y divide-(--rule)">
+              <CompRow tool="GitHub Sponsors" desc="custodial, monthly, manual splits" />
+              <CompRow tool="Gitcoin Grants" desc="round-based, quadratic, curated" />
+              <CompRow tool="Drips Network" desc="on-chain streams, manual percentages" />
+              <CompRow
+                tool="GitDrip"
+                desc="on-chain, continuous, AI-scored auto-splits"
+                highlight
+              />
+            </div>
+          </div>
         </section>
       </main>
 
@@ -111,61 +104,41 @@ export default function Page() {
   );
 }
 
-function Step({
-  n,
-  title,
-  body,
-}: {
-  n: number;
-  title: string;
-  body: string;
-}) {
+function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <li className="grid grid-cols-[3rem_1fr] gap-6 items-baseline">
-      <span className="font-display text-3xl text-(--accent-driprose) tabular-nums">
-        {n.toString().padStart(2, "0")}
+    <div className="grid grid-cols-[4rem_1fr] md:grid-cols-[5rem_1fr] gap-6 items-start">
+      <span className="font-display text-5xl md:text-6xl text-(--accent-driprose) leading-none">
+        {n}
       </span>
       <div>
-        <h3 className="font-display text-xl text-(--ink-display) mb-2">
+        <h3 className="font-display text-2xl md:text-3xl text-(--ink-display) mb-3">
           {title}
         </h3>
-        <p className="text-(--ink-body) leading-relaxed max-w-[60ch]">
+        <p className="text-(--ink-body) text-lg leading-relaxed max-w-[55ch]">
           {body}
         </p>
       </div>
-    </li>
+    </div>
   );
 }
 
-function Row({
-  k,
-  v,
-  accent = false,
+function CompRow({
+  tool,
+  desc,
+  highlight = false,
 }: {
-  k: string;
-  v: string;
-  accent?: boolean;
+  tool: string;
+  desc: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[10rem_1fr] gap-6 py-4">
-      <dt
-        className={
-          accent
-            ? "font-display text-lg text-(--accent-driprose)"
-            : "text-(--ink-muted)"
-        }
-      >
-        {k}
-      </dt>
-      <dd
-        className={
-          accent
-            ? "text-(--ink-display) leading-relaxed"
-            : "text-(--ink-body) leading-relaxed"
-        }
-      >
-        {v}
-      </dd>
+    <div className={`grid grid-cols-[12rem_1fr] gap-6 px-6 py-5 ${highlight ? "bg-(--surface-card)" : ""}`}>
+      <span className={`font-display text-lg ${highlight ? "text-(--accent-driprose)" : "text-(--ink-muted)"}`}>
+        {tool}
+      </span>
+      <span className={`text-base ${highlight ? "text-(--ink-display)" : "text-(--ink-body)"}`}>
+        {desc}
+      </span>
     </div>
   );
 }
