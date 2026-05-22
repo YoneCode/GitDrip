@@ -56,7 +56,8 @@ export default function ClaimPage() {
           {/* Lead with the number — the user came here for this */}
           {!authenticated ? (
             <section>
-              <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6">
+              <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6"
+                style={{ fontFamily: "'Instrument Serif', serif" }}>
                 claim your payout
               </h1>
               <p className="text-lg text-(--ink-muted) mb-8 max-w-[45ch]">
@@ -80,28 +81,40 @@ export default function ClaimPage() {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-3">
                 pending balance
               </p>
-              <p className="font-display text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-none mb-8">
-                <WeiAmount value={pending!} fractionDigits={4} />
-              </p>
-              <Button
-                onClick={onClaim}
-                disabled={submitting}
-                className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-8 text-base"
-              >
-                {submitting ? (
-                  <><Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />claiming...</>
-                ) : (
-                  <>withdraw now<ArrowRight aria-hidden className="w-4 h-4 ml-2" /></>
-                )}
-              </Button>
-              <p className="mt-3 text-sm text-(--ink-faint)">
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-10 border-b border-(--rule) pb-8">
+                <p
+                  className="text-(--ink-display) tracking-tight leading-none text-6xl md:text-7xl lg:text-8xl"
+                  style={{ fontFamily: "'Instrument Serif', serif" }}
+                >
+                  <WeiAmount value={pending!} fractionDigits={4} />
+                </p>
+                <Button
+                  onClick={onClaim}
+                  disabled={submitting}
+                  className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 md:h-14 px-7 md:px-9 text-base shrink-0 self-start md:self-auto"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
+                      claiming...
+                    </>
+                  ) : (
+                    <>
+                      withdraw now
+                      <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="mt-4 text-sm text-(--ink-faint)">
                 one transaction, all of it at once.
               </p>
             </section>
           ) : (
             /* Empty state — onboarding guidance */
             <section>
-              <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4">
+              <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4"
+                style={{ fontFamily: "'Instrument Serif', serif" }}>
                 nothing to claim yet
               </h1>
               <p className="text-lg text-(--ink-muted) mb-10 max-w-[50ch]">
