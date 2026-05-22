@@ -78,9 +78,9 @@ export default function RegisterPage() {
             className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95]"
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
-            commit this file.
+            Commit This File.
             <br />
-            <span className="text-(--ink-muted)">we verify the rest.</span>
+            <span className="text-(--ink-muted)">We Verify the Rest.</span>
           </h1>
 
           {/* Wallet status — single line, not a step */}
@@ -166,7 +166,7 @@ export default function RegisterPage() {
               className="text-2xl text-(--ink-display) mb-6"
               style={{ fontFamily: "'Instrument Serif', serif" }}
             >
-              once it&apos;s pushed, register on-chain
+              Once It&apos;s Pushed, Register On-chain
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
               <div>
@@ -209,11 +209,11 @@ export default function RegisterPage() {
               {submitting ? (
                 <>
                   <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
-                  verifying on-chain...
+                  Verifying On-chain...
                 </>
               ) : (
                 <>
-                  register repo
+                  Register Repo
                   <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
                 </>
               )}

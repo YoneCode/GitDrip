@@ -59,21 +59,20 @@ export default function DashboardIndex() {
                 className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) disabled:opacity-30 disabled:cursor-not-allowed text-(--accent-on-driprose) font-medium text-sm md:text-base transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                 aria-label="open dashboard"
               >
-                open
+                Open
                 <ArrowRight aria-hidden className="w-4 h-4" />
               </button>
             </div>
           </form>
 
           <p className="mt-6 text-(--ink-muted) max-w-[55ch]">
-            Pool size, scoring history, per-contributor splits. Real on-chain
-            data, no sign-in needed.
+            Pool size, scoring history, per-contributor splits. Real on-chain data, no sign-in needed.
           </p>
 
           {/* Examples — proper tile cards, not bullet list */}
           <section className="mt-16">
             <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-(--ink-faint) mb-6">
-              try one of these
+              Try One Of These
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {EXAMPLES.map((ex) => (
@@ -89,7 +88,7 @@ export default function DashboardIndex() {
                     {ex.desc}
                   </p>
                   <span className="inline-flex items-center gap-1 mt-4 text-xs font-mono text-(--ink-faint) group-hover:text-(--accent-driprose) transition-colors">
-                    open
+                    Open
                     <ArrowRight aria-hidden className="w-3 h-3" />
                   </span>
                 </Link>

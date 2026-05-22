@@ -58,23 +58,23 @@ export default function ClaimPage() {
             <section>
               <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6"
                 style={{ fontFamily: "'Instrument Serif', serif" }}>
-                claim your payout
+                Claim Your Payout
               </h1>
               <p className="text-lg text-(--ink-muted) mb-8 max-w-[45ch]">
-                connect your wallet to see your pending balance across all repos.
+                Connect your wallet to see your pending balance across all repos.
               </p>
               <Button
                 onClick={login}
                 disabled={!ready}
                 className="bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose) h-12 px-7 text-base"
               >
-                connect wallet
+                Connect Wallet
               </Button>
             </section>
           ) : loading ? (
             <section className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 text-(--accent-driprose) animate-spin" />
-              <span className="text-(--ink-muted)">reading from chain...</span>
+              <span className="text-(--ink-muted)">Reading from chain...</span>
             </section>
           ) : hasFunds ? (
             <section>
@@ -96,18 +96,18 @@ export default function ClaimPage() {
                   {submitting ? (
                     <>
                       <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
-                      claiming...
+                      Claiming...
                     </>
                   ) : (
                     <>
-                      withdraw now
+                      Withdraw Now
                       <ArrowRight aria-hidden className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
               </div>
               <p className="mt-4 text-sm text-(--ink-faint)">
-                one transaction, all of it at once.
+                One transaction, all of it at once.
               </p>
             </section>
           ) : (
@@ -115,10 +115,10 @@ export default function ClaimPage() {
             <section>
               <h1 className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4"
                 style={{ fontFamily: "'Instrument Serif', serif" }}>
-                nothing to claim yet
+                Nothing To Claim Yet
               </h1>
               <p className="text-lg text-(--ink-muted) mb-10 max-w-[50ch]">
-                your balance fills after a distribution scores you above zero on a repo where you are enrolled.
+                Your balance fills after a distribution scores you above zero on a repo where you are enrolled.
               </p>
               <div className="border-t border-(--rule) pt-8 space-y-6">
                 <OnboardStep n="1" text="enroll in a registered repo" href="/enroll" />
