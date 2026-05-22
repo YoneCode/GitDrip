@@ -49,7 +49,7 @@ export default function Page() {
           href="/sponsor/genlayerlabs/genvm"
           className="liquid-glass rounded-full px-6 py-2.5 text-sm text-foreground hover:scale-[1.03] transition-transform"
         >
-          Begin Journey
+          Trust the Consensus
         </Link>
       </nav>
 
@@ -77,7 +77,7 @@ export default function Page() {
           href="/sponsor/genlayerlabs/genvm"
           className="liquid-glass rounded-full px-14 py-5 text-base text-foreground mt-12 hover:scale-[1.03] transition-transform cursor-pointer animate-fade-rise-delay-2"
         >
-          Begin Journey
+          Trust the Consensus
         </Link>
       </section>
     </div>
