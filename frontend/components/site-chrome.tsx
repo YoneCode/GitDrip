@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { WalletButton } from "@/components/wallet-button";
+import { CONTRACT_ADDRESS, explorerContract } from "@/lib/genlayer";
+import { shortAddress } from "@/lib/format";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -85,7 +87,7 @@ export function SiteFooter() {
           deployed on{" "}
           <a
             className="text-(--accent-driprose) hover:text-(--accent-driprose-hover) underline underline-offset-2"
-            href="https://explorer-bradbury.genlayer.com/contracts/0xEb7370b0df3e3d5eCAf9846048693598362D6CE8"
+            href={explorerContract()}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -99,7 +101,8 @@ export function SiteFooter() {
 }
 
 function CopyAddress() {
-  const addr = "0xEb7370b0df3e3d5eCAf9846048693598362D6CE8";
+  const addr = CONTRACT_ADDRESS;
+  const short = shortAddress(addr);
   const [copied, setCopied] = useState(false);
   const onClick = () => {
     void navigator.clipboard.writeText(addr);
@@ -111,8 +114,9 @@ function CopyAddress() {
       onClick={onClick}
       className="font-mono text-xs text-(--ink-faint) hover:text-(--ink-body) transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
       aria-label="copy contract address"
+      title={addr}
     >
-      {copied ? "copied" : "0x725A…8d99"}
+      {copied ? "copied" : short}
     </button>
   );
 }

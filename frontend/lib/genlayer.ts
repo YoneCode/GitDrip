@@ -24,5 +24,5 @@ export function explorerTx(hash: string) {
 }
 
 export function explorerContract(address: string = CONTRACT_ADDRESS) {
-  return `${EXPLORER}/contracts/${address}`;
+  return `${EXPLORER}/address/${address}`;
 }

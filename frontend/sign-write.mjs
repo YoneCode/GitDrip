@@ -10,7 +10,7 @@ import { createClient } from "genlayer-js";
 import { testnetBradbury } from "genlayer-js/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
-const CONTRACT = "0x725A57f7ED354eD124812DB9349483095dd38d99";
+const CONTRACT = "0xEb7370b0df3e3d5eCAf9846048693598362D6CE8";
 const ATTOS = 1_000_000_000_000_000_000n;
 
 const [, , method, argsJson, valueGen = "0"] = process.argv;
