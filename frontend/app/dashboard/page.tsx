@@ -14,7 +14,6 @@ import { getRepoActivity, type ProfileEntry } from "@/lib/profile";
 
 const EXAMPLES = [
   { slug: "genlayerlabs/genvm", desc: "GenLayer's intelligent contract VM" },
-  { slug: "genlayerlabs/skills", desc: "Claude skills for GenLayer dev" },
   { slug: "genlayerlabs/genlayer-py", desc: "Python SDK for genvm contracts" },
 ];
 
