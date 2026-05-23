@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { TextSkeleton } from "@/components/skeleton";
 import { useViewTransition } from "@/hooks/use-view-transition";
 import { usePoll } from "@/hooks/use-poll";
 import { useWallet } from "@/hooks/use-wallet";
-import { nextDepositId } from "@/lib/contract";
+import { nextDepositId, recentSponsoredRepos } from "@/lib/contract";
+import { formatGlt } from "@/lib/format";
 import { getRepoActivity, type ProfileEntry } from "@/lib/profile";
 
 const EXAMPLES = [
@@ -33,6 +35,20 @@ export default function DashboardIndex() {
   useEffect(() => {
     setActivity(getRepoActivity(addr));
   }, [addr]);
+
+  // Live "recently sponsored" rail — walks the latest on-chain deposits
+  const [recent, setRecent] = useState<
+    Array<{ slug: string; pool_wei: string; lastTs: number }> | null
+  >(null);
+  useEffect(() => {
+    let cancelled = false;
+    recentSponsoredRepos(24, 3)
+      .then((r) => !cancelled && setRecent(r))
+      .catch(() => !cancelled && setRecent([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [lastDepositId]);
 
   // Show a brief "+1 deposit" pulse when next_deposit_id ticks up
   useEffect(() => {
@@ -102,7 +118,7 @@ export default function DashboardIndex() {
             )}
           </div>
 
-          <form onSubmit={submit} className="block">
+          <form onSubmit={submit} className="block animate-fade-rise">
             <label htmlFor="repo-search" className="sr-only">repository slug</label>
             <div className="relative border-b-2 border-(--rule-strong) focus-within:border-(--accent-driprose) transition-colors">
               <Search aria-hidden className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 md:w-9 md:h-9 text-(--ink-faint)" />
@@ -166,7 +182,7 @@ export default function DashboardIndex() {
           {searching && (
             <p className="mt-4 inline-flex items-center gap-2 text-sm text-(--ink-muted)">
               <Loader2 aria-hidden className="w-3.5 h-3.5 animate-spin" />
-              searching github…
+              Searching GitHub…
             </p>
           )}
 
@@ -176,26 +192,64 @@ export default function DashboardIndex() {
 
           <section className="mt-16">
             <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-(--ink-faint) mb-6">
-              Try One Of These
+              {recent && recent.length > 0
+                ? "Recently Sponsored On-chain"
+                : "Try One Of These"}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.slug}
-                  onClick={() => navigate(`/dashboard/${ex.slug}`)}
-                  className="group block text-left border border-(--rule) hover:border-(--accent-driprose) transition-colors p-5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <p className="font-mono text-sm text-(--ink-body) group-hover:text-(--accent-driprose) transition-colors break-all">
-                    {ex.slug}
-                  </p>
-                  <p className="text-xs text-(--ink-muted) mt-2 leading-relaxed">{ex.desc}</p>
-                  <span className="inline-flex items-center gap-1 mt-4 text-xs font-mono text-(--ink-faint) group-hover:text-(--accent-driprose) transition-colors">
-                    Open
-                    <ArrowRight aria-hidden className="w-3 h-3" />
-                  </span>
-                </button>
-              ))}
-            </div>
+            {recent === null ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-(--rule) p-5 rounded-md"
+                  >
+                    <TextSkeleton lines={2} />
+                  </div>
+                ))}
+              </div>
+            ) : recent.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recent.map((r) => (
+                  <button
+                    key={r.slug}
+                    onClick={() => navigate(`/dashboard/${r.slug}`)}
+                    className="group block text-left border border-(--rule) hover:border-(--accent-driprose) hover:-translate-y-0.5 transition-all duration-200 p-5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <p className="font-mono text-sm text-(--ink-body) group-hover:text-(--accent-driprose) transition-colors break-all">
+                      {r.slug}
+                    </p>
+                    <p className="text-xs text-(--ink-muted) mt-2 leading-relaxed tabular-nums">
+                      pool {formatGlt(BigInt(r.pool_wei), 2)} GLT
+                    </p>
+                    <span className="inline-flex items-center gap-1 mt-4 text-xs font-mono text-(--ink-faint) group-hover:text-(--accent-driprose) transition-colors">
+                      Open
+                      <ArrowRight aria-hidden className="w-3 h-3" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {EXAMPLES.map((ex) => (
+                  <button
+                    key={ex.slug}
+                    onClick={() => navigate(`/dashboard/${ex.slug}`)}
+                    className="group block text-left border border-(--rule) hover:border-(--accent-driprose) hover:-translate-y-0.5 transition-all duration-200 p-5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <p className="font-mono text-sm text-(--ink-body) group-hover:text-(--accent-driprose) transition-colors break-all">
+                      {ex.slug}
+                    </p>
+                    <p className="text-xs text-(--ink-muted) mt-2 leading-relaxed">
+                      {ex.desc}
+                    </p>
+                    <span className="inline-flex items-center gap-1 mt-4 text-xs font-mono text-(--ink-faint) group-hover:text-(--accent-driprose) transition-colors">
+                      Open
+                      <ArrowRight aria-hidden className="w-3 h-3" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </main>

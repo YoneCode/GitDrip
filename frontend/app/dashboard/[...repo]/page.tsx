@@ -9,6 +9,7 @@ import { WeiAmount } from "@/components/wei-amount";
 import { ScoreBar } from "@/components/score-bar";
 import { TxLink } from "@/components/tx-link";
 import { Button } from "@/components/ui/button";
+import { TextSkeleton } from "@/components/skeleton";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
   getRepo,
@@ -75,7 +76,7 @@ export default function RepoDashboard({
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-3">
           repo
         </p>
-        <div className="flex items-baseline justify-between gap-4 flex-wrap">
+        <div className="flex items-baseline justify-between gap-4 flex-wrap animate-fade-rise">
           <h1 className="font-display text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95]">
             {repoSlug}
           </h1>
@@ -90,15 +91,32 @@ export default function RepoDashboard({
         </div>
 
         {loading && (
-          <p className="mt-12 text-(--ink-faint) text-sm">reading from chain…</p>
+          <section className="mt-12 border-y border-(--rule) py-12">
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-(--ink-faint) mb-3">
+              reading from chain
+            </p>
+            <TextSkeleton lines={3} className="max-w-md" />
+          </section>
         )}
 
         {!loading && !record && (
-          <section className="mt-12 border-y border-(--rule) py-12">
+          <section className="mt-12 border-y border-(--rule) py-16">
+            <h2
+              className="text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-4"
+              style={{ fontFamily: "'Instrument Serif', serif" }}
+            >
+              Not Registered Yet.
+            </h2>
             <p className="text-(--ink-body) leading-relaxed max-w-[55ch]">
-              <span className="font-mono">{repoSlug}</span> isn&apos;t
-              registered. The maintainer can register it — anyone can sponsor
-              once it is.
+              <span className="font-mono">{repoSlug}</span> isn&apos;t on
+              GitDrip. The maintainer can register it from{" "}
+              <Link
+                href="/register"
+                className="text-(--accent-driprose) hover:text-(--accent-driprose-hover) underline underline-offset-4"
+              >
+                /register
+              </Link>
+              . Anyone can sponsor once it is.
             </p>
           </section>
         )}
@@ -140,7 +158,7 @@ export default function RepoDashboard({
             <section className="mt-12 grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12">
               <div>
                 <h2 className="font-display text-xl text-(--ink-display) mb-4">
-                  details
+                  Details
                 </h2>
                 <dl className="text-sm space-y-2">
                   <Row label="maintainer">
@@ -173,7 +191,7 @@ export default function RepoDashboard({
                   className="mt-8 bg-(--accent-driprose) hover:bg-(--accent-driprose-hover) text-(--accent-on-driprose)"
                 >
                   <Link href={`/sponsor/${repoSlug}`}>
-                    sponsor this repo
+                    Sponsor This Repo
                     <ArrowRight aria-hidden className="w-4 h-4 ml-1.5" />
                   </Link>
                 </Button>
@@ -183,7 +201,7 @@ export default function RepoDashboard({
 
               <div>
                 <h2 className="font-display text-xl text-(--ink-display) mb-4">
-                  latest scoring
+                  Latest Scoring
                 </h2>
                 {latestSnap ? (
                   <Snapshot snap={latestSnap} roster={roster} />
@@ -332,6 +350,11 @@ function RefundSection({
   const [nowSec] = useState(() => Math.floor(Date.now() / 1000));
   const lastDist = record.last_distribution_unix || record.period_start_unix;
   const isDormant = nowSec - lastDist >= DORMANT_SEC;
+  const refundEligibleAt = lastDist + DORMANT_SEC;
+  const daysUntilRefund = Math.max(
+    0,
+    Math.ceil((refundEligibleAt - nowSec) / 86400),
+  );
 
   if (!addr || deposits.length === 0) return null;
 
@@ -353,11 +376,17 @@ function RefundSection({
   return (
     <div className="mt-8 border-t border-(--rule) pt-6">
       <h3 className="font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-3">
-        your deposits
+        Your Deposits
       </h3>
-      {!isDormant && (
-        <p className="text-sm text-(--ink-muted) mb-3">
-          refundable after 180 days with no distribution
+      {isDormant ? (
+        <p className="text-sm text-(--status-good) mb-3">
+          Refundable now — repo has been dormant for ≥ 180 days.
+        </p>
+      ) : (
+        <p className="text-sm text-(--ink-muted) mb-3 tabular-nums">
+          Refundable in {daysUntilRefund}{" "}
+          {daysUntilRefund === 1 ? "day" : "days"} (after 180 days with no
+          distribution).
         </p>
       )}
       <ul className="space-y-2 text-sm">

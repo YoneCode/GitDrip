@@ -118,7 +118,7 @@ export default function EnrollPage() {
             contributor
           </p>
           <h1
-            className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95]"
+            className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95] animate-fade-rise"
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
             Publish This Gist.
@@ -272,7 +272,7 @@ export default function EnrollPage() {
               {submitting ? (
                 <>
                   <Loader2 aria-hidden className="w-4 h-4 mr-2 animate-spin" />
-                  verifying on-chain...
+                  Verifying On-chain...
                 </>
               ) : (
                 <>
@@ -422,8 +422,19 @@ function PreflightRows({
 
   return (
     <div className="mt-5 flex flex-col gap-2">
-      {repoRow}
-      {gistRow}
+      {repoRow && (
+        <div className="animate-fade-rise" style={{ animationDuration: "0.4s" }}>
+          {repoRow}
+        </div>
+      )}
+      {gistRow && (
+        <div
+          className="animate-fade-rise"
+          style={{ animationDuration: "0.4s", animationDelay: "0.12s" }}
+        >
+          {gistRow}
+        </div>
+      )}
     </div>
   );
 }

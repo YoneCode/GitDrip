@@ -82,16 +82,19 @@ export default function VsPage() {
             comparison
           </p>
           <h1
-            className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95]"
+            className="text-5xl sm:text-6xl md:text-7xl text-(--ink-display) tracking-tight leading-[0.95] animate-fade-rise"
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
-            the split self-adjusts.
+            The Split{" "}
+            <em className="not-italic text-(--ink-muted)">Self-Adjusts.</em>
             <br />
-            <span className="text-(--ink-muted)">that&apos;s the headline.</span>
+            <span className="text-(--ink-muted)">
+              That&apos;s The Headline.
+            </span>
           </h1>
-          <p className="mt-6 text-lg text-(--ink-muted) max-w-[55ch]">
-            everything else is table stakes. here&apos;s how GitDrip stacks up
-            against existing OSS funding tools.
+          <p className="mt-6 text-lg text-(--ink-muted) max-w-[55ch] animate-fade-rise-delay">
+            Everything else is plumbing. Here is how GitDrip stacks up against
+            the four funding tools open-source maintainers actually use.
           </p>
 
           {/* DESKTOP TABLE — md and up */}
@@ -161,7 +164,7 @@ export default function VsPage() {
               className="text-3xl md:text-4xl text-(--ink-display) tracking-tight mb-6"
               style={{ fontFamily: "'Instrument Serif', serif" }}
             >
-              why GenLayer is required
+              Why GenLayer Is Required
             </h2>
             <p className="text-(--ink-body) leading-relaxed">
               Deterministic splits (X% to Alice, Y% to Bob) are what Drips

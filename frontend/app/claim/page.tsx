@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { WeiAmount } from "@/components/wei-amount";
 import { TxLink } from "@/components/tx-link";
 import { TxStatusPill } from "@/components/tx-status-pill";
+import { TextSkeleton } from "@/components/skeleton";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
   claim,
@@ -22,7 +23,7 @@ import { humanError } from "@/lib/errors";
 import { useCountUp } from "@/hooks/use-count-up";
 import { useTxStatus } from "@/hooks/use-tx-status";
 import { listRoles } from "@/lib/profile";
-import { formatGlt } from "@/lib/format";
+import { formatGlt, formatDate } from "@/lib/format";
 
 export default function ClaimPage() {
   const { ready, authenticated, login, address: addr } = useWallet();
@@ -73,7 +74,7 @@ export default function ClaimPage() {
           {!authenticated ? (
             <section>
               <h1
-                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6"
+                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-6 animate-fade-rise"
                 style={{ fontFamily: "'Instrument Serif', serif" }}
               >
                 Claim Your Payout
@@ -90,9 +91,11 @@ export default function ClaimPage() {
               </Button>
             </section>
           ) : loading ? (
-            <section className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-(--accent-driprose) animate-spin" />
-              <span className="text-(--ink-muted)">Reading from chain...</span>
+            <section>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--ink-faint) mb-3">
+                reading from chain
+              </p>
+              <TextSkeleton lines={2} className="max-w-md" />
             </section>
           ) : hasFunds ? (
             <section>
@@ -127,12 +130,13 @@ export default function ClaimPage() {
               <p className="mt-4 text-sm text-(--ink-faint)">
                 One transaction, all of it at once.
               </p>
+              <RecentEarnings wallet={addr} />
               <EnrollmentRail wallet={addr} />
             </section>
           ) : (
             <section>
               <h1
-                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4"
+                className="text-5xl md:text-6xl text-(--ink-display) tracking-tight leading-[0.95] mb-4 animate-fade-rise"
                 style={{ fontFamily: "'Instrument Serif', serif" }}
               >
                 Nothing To Claim Yet
@@ -140,6 +144,7 @@ export default function ClaimPage() {
               <p className="text-lg text-(--ink-muted) mb-10 max-w-[50ch]">
                 Your balance fills after a distribution scores you above zero on a repo where you are enrolled.
               </p>
+              <RecentEarnings wallet={addr} />
               <EnrollmentRail wallet={addr} />
               <div className="border-t border-(--rule) pt-8 mt-12 space-y-6">
                 <OnboardStep n="1" text="Enroll in a registered repo" href="/enroll" />
@@ -332,6 +337,136 @@ function EnrollmentRail({ wallet }: { wallet: string | null | undefined }) {
             ) : it.registered && it.record!.distribution_count === 0 ? (
               <p className="text-xs text-(--ink-faint) shrink-0">no rounds yet</p>
             ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+
+// ---------------------------------------------------------------------------
+// RecentEarnings — flat chronological list of distributions where this
+// wallet earned > 0. Walks each enrolled repo's last few score logs and
+// surfaces the most recent N events across all of them.
+// ---------------------------------------------------------------------------
+type EarningEvent = {
+  slug: string;
+  idx: number;
+  ts: number;
+  score: number;
+  share: bigint;
+};
+
+function RecentEarnings({ wallet }: { wallet: string | null | undefined }) {
+  const [events, setEvents] = useState<EarningEvent[] | null>(null);
+
+  useEffect(() => {
+    if (!wallet) {
+      setEvents(null);
+      return;
+    }
+    const slugs = listRoles(wallet, "contributor");
+    if (slugs.length === 0) {
+      setEvents([]);
+      return;
+    }
+    const walletLc = wallet.toLowerCase();
+    let cancelled = false;
+
+    (async () => {
+      const collected: EarningEvent[] = [];
+      for (const slug of slugs) {
+        if (cancelled) return;
+        try {
+          const rec = await getRepo(slug);
+          if (!rec || rec.distribution_count === 0) continue;
+
+          // Find which login this wallet was registered under
+          const roster = await getRoster(slug);
+          let myLogin: string | null = null;
+          for (const [l, w] of Object.entries(roster)) {
+            if (w.toLowerCase() === walletLc) {
+              myLogin = l;
+              break;
+            }
+          }
+          if (!myLogin) continue;
+
+          // Walk the last up to 3 score logs
+          const startIdx = rec.distribution_count;
+          const endIdx = Math.max(1, startIdx - 2);
+          for (let i = startIdx; i >= endIdx; i--) {
+            if (cancelled) return;
+            const snap = await getScoreLog(slug, i);
+            if (!snap) continue;
+            const score = snap.scores?.[myLogin] ?? 0;
+            if (score <= 0) continue;
+            const total = Object.values(snap.scores ?? {}).reduce(
+              (a, b) => a + Number(b),
+              0,
+            );
+            if (total <= 0) continue;
+            try {
+              const distributed = BigInt(snap.distributed_wei ?? "0");
+              const share = (distributed * BigInt(score)) / BigInt(total);
+              if (share > 0n) {
+                collected.push({
+                  slug,
+                  idx: i,
+                  ts: snap.ts,
+                  score,
+                  share,
+                });
+              }
+            } catch {
+              /* ignore */
+            }
+          }
+        } catch {
+          /* ignore per-repo errors */
+        }
+      }
+      if (cancelled) return;
+      collected.sort((a, b) => b.ts - a.ts);
+      setEvents(collected.slice(0, 5));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [wallet]);
+
+  if (!events || events.length === 0) return null;
+
+  return (
+    <section className="mt-12 border-t border-(--rule) pt-8">
+      <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-(--ink-faint) mb-5">
+        Recent Earnings
+      </h2>
+      <ul className="divide-y divide-(--rule)">
+        {events.map((e) => (
+          <li
+            key={`${e.slug}#${e.idx}`}
+            className="py-4 grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-1 items-baseline"
+          >
+            <span className="text-xs text-(--ink-faint) tabular-nums">
+              {formatDate(e.ts)}
+            </span>
+            <Link
+              href={`/dashboard/${e.slug}`}
+              className="font-mono text-sm text-(--ink-body) hover:text-(--accent-driprose) underline-offset-4 hover:underline truncate min-w-0"
+            >
+              {e.slug}
+            </Link>
+            <span className="text-sm tabular-nums text-(--ink-display)">
+              +{formatGlt(e.share, 4)} GLT
+            </span>
+            <span aria-hidden />
+            <span className="text-xs text-(--ink-muted)">
+              round {e.idx} · score {e.score}/100
+            </span>
+            <span aria-hidden />
           </li>
         ))}
       </ul>

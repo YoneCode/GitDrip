@@ -146,6 +146,42 @@ export async function nextDepositId(): Promise<bigint> {
   return 0n;
 }
 
+/**
+ * Walk the last `lookback` deposits (default 24) and return the most
+ * recently sponsored repos with their on-chain pool. Sequential reads to
+ * respect Bradbury's gen_call rate limit. Useful for the dashboard root
+ * "recently sponsored" rail.
+ */
+export async function recentSponsoredRepos(
+  lookback = 24,
+  take = 3,
+): Promise<Array<{ slug: string; pool_wei: string; lastTs: number }>> {
+  const next = await nextDepositId();
+  if (next === 0n) return [];
+  const start = next - 1n;
+  const end = next - BigInt(lookback) > 0n ? next - BigInt(lookback) : 0n;
+  const seen = new Map<string, number>(); // slug -> latest ts
+  for (let i = start; i >= end; i--) {
+    const dep = await getDeposit(i);
+    if (!dep) {
+      if (i === 0n) break;
+      continue;
+    }
+    const cur = seen.get(dep.repo) ?? 0;
+    if (dep.ts > cur) seen.set(dep.repo, dep.ts);
+    if (seen.size >= take * 2) break; // give us extras to handle dedup
+    if (i === 0n) break;
+  }
+  // Sort by lastTs desc, take top N, then resolve pool sizes
+  const sorted = [...seen.entries()].sort((a, b) => b[1] - a[1]).slice(0, take);
+  const out: Array<{ slug: string; pool_wei: string; lastTs: number }> = [];
+  for (const [slug, ts] of sorted) {
+    const rec = await getRepo(slug);
+    if (rec) out.push({ slug, pool_wei: rec.pool_wei, lastTs: ts });
+  }
+  return out;
+}
+
 // ---- writes -------------------------------------------------------------
 
 export async function sponsor(repoSlug: string, valueWei: bigint) {

@@ -31,14 +31,14 @@ test("/sponsor/<unregistered> shows 'not registered yet' empty state", async ({
   });
 });
 
-test("/dashboard/<unregistered> shows 'isn't registered' empty state", async ({
+test("/dashboard/<unregistered> shows 'not registered' empty state", async ({
   page,
 }) => {
   await page.goto("/dashboard/this-org-does-not-exist/this-repo-does-not-exist", {
     waitUntil: "domcontentloaded",
   });
   await waitForApp(page);
-  await expect(page.locator("body")).toContainText(/isn.?t registered/i, {
+  await expect(page.locator("body")).toContainText(/not registered/i, {
     timeout: 15_000,
   });
 });
@@ -50,8 +50,8 @@ test("/dashboard/alnamodevloper/gitdrip-demo shows the registered repo state", a
     waitUntil: "domcontentloaded",
   });
   await waitForApp(page);
-  // The registered repo must NOT show the empty state.
-  await expect(page.locator("body")).not.toContainText(/isn.?t registered/i, {
+  // The registered repo must NOT show the empty state headline.
+  await expect(page.locator("body")).not.toContainText(/not registered yet/i, {
     timeout: 15_000,
   });
   // It must surface the pool + maintainer somewhere on the page.
