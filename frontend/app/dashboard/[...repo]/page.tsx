@@ -10,11 +10,10 @@ import { ScoreBar } from "@/components/score-bar";
 import { TxLink } from "@/components/tx-link";
 import { Button } from "@/components/ui/button";
 import { TextSkeleton } from "@/components/skeleton";
+import { FreshnessPill } from "@/components/freshness-pill";
+import { RateLimitToast } from "@/components/rate-limit-toast";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import {
-  getRepo,
-  getRoster,
-  getScoreLog,
   sponsorRefund,
   nextDepositId,
   getDeposit,
@@ -22,6 +21,7 @@ import {
   type ScoreSnapshot,
   type Deposit,
 } from "@/lib/contract";
+import { useRepoDashboard } from "@/hooks/use-repo-data";
 import { formatDate, daysBetween } from "@/lib/format";
 import { explorerContract } from "@/lib/genlayer";
 
@@ -35,32 +35,13 @@ export default function RepoDashboard({
   const { repo: segments } = use(params);
   const repoSlug = segments?.join("/") ?? "";
 
-  const [record, setRecord] = useState<RepoRecord | null>(null);
-  const [roster, setRoster] = useState<Record<string, string>>({});
-  const [latestSnap, setLatestSnap] = useState<ScoreSnapshot | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, isValidating, mutate, cachedAt } =
+    useRepoDashboard(repoSlug);
 
-  useEffect(() => {
-    if (!repoSlug) return;
-    let cancelled = false;
-    setLoading(true);
-    Promise.all([getRepo(repoSlug), getRoster(repoSlug)])
-      .then(async ([rec, ros]) => {
-        if (cancelled) return;
-        setRecord(rec);
-        setRoster(ros);
-        if (rec && rec.distribution_count > 0) {
-          const snap = await getScoreLog(repoSlug, rec.distribution_count);
-          if (!cancelled) setLatestSnap(snap);
-        } else {
-          setLatestSnap(null);
-        }
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [repoSlug]);
+  const record: RepoRecord | null = data?.record ?? null;
+  const roster: Record<string, string> = data?.roster ?? {};
+  const latestSnap: ScoreSnapshot | null = data?.latestSnap ?? null;
+  const loading = isLoading;
 
   const [nowSec] = useState(() => Math.floor(Date.now() / 1000));
   const lastDist =
@@ -71,6 +52,7 @@ export default function RepoDashboard({
   return (
     <>
       <SiteHeader />
+      <RateLimitToast />
 
       <main className="px-6 md:px-12 lg:px-20 py-20"><div className="max-w-5xl">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose) mb-3">
@@ -89,6 +71,15 @@ export default function RepoDashboard({
             on github ↗
           </a>
         </div>
+
+        {(cachedAt || isValidating) && (
+          <FreshnessPill
+            className="mt-3"
+            cachedAt={cachedAt}
+            onRefresh={() => mutate()}
+            isValidating={isValidating}
+          />
+        )}
 
         {loading && (
           <section className="mt-12 border-y border-(--rule) py-12">

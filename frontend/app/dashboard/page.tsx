@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { TextSkeleton } from "@/components/skeleton";
+import { FreshnessPill } from "@/components/freshness-pill";
+import { RateLimitToast } from "@/components/rate-limit-toast";
 import { useViewTransition } from "@/hooks/use-view-transition";
-import { usePoll } from "@/hooks/use-poll";
 import { useWallet } from "@/hooks/use-wallet";
-import { nextDepositId, recentSponsoredRepos } from "@/lib/contract";
+import { useNextDeposit, useRecentSponsored } from "@/hooks/use-repo-data";
 import { formatGlt } from "@/lib/format";
 import { getRepoActivity, type ProfileEntry } from "@/lib/profile";
 
@@ -26,7 +27,11 @@ export default function DashboardIndex() {
   const [suggestions, setSuggestions] = useState<GhRepo[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<number | null>(null);
-  const lastDepositId = usePoll(() => nextDepositId(), 8000);
+  const {
+    data: lastDepositId,
+    mutate: refreshNextDeposit,
+    cachedAt: depositCachedAt,
+  } = useNextDeposit();
   const prevDepositRef = useRef<bigint | null>(null);
   const [tick, setTick] = useState(false);
   const [activity, setActivity] = useState<ProfileEntry[]>([]);
@@ -36,24 +41,25 @@ export default function DashboardIndex() {
     setActivity(getRepoActivity(addr));
   }, [addr]);
 
-  // Live "recently sponsored" rail — walks the latest on-chain deposits
-  const [recent, setRecent] = useState<
-    Array<{ slug: string; pool_wei: string; lastTs: number }> | null
-  >(null);
-  useEffect(() => {
-    let cancelled = false;
-    recentSponsoredRepos(24, 3)
-      .then((r) => !cancelled && setRecent(r))
-      .catch(() => !cancelled && setRecent([]));
-    return () => {
-      cancelled = true;
-    };
-  }, [lastDepositId]);
+  // Live "recently sponsored" rail — SWR-backed, no auto-poll
+  const {
+    data: recent,
+    isLoading: recentLoading,
+    mutate: refreshRecent,
+  } = useRecentSponsored();
+
+  const refreshAll = () => {
+    void refreshNextDeposit();
+    void refreshRecent();
+  };
 
   // Show a brief "+1 deposit" pulse when next_deposit_id ticks up
   useEffect(() => {
-    if (lastDepositId === null) return;
-    if (prevDepositRef.current !== null && lastDepositId > prevDepositRef.current) {
+    if (lastDepositId === undefined || lastDepositId === null) return;
+    if (
+      prevDepositRef.current !== null &&
+      lastDepositId > prevDepositRef.current
+    ) {
       setTick(true);
       const t = window.setTimeout(() => setTick(false), 2400);
       return () => window.clearTimeout(t);
@@ -100,6 +106,7 @@ export default function DashboardIndex() {
     <>
       {searching && <div className="top-progress" aria-hidden />}
       <SiteHeader />
+      <RateLimitToast />
       <main className="px-6 md:px-12 lg:px-20 py-16 md:py-24">
         <div className="max-w-5xl">
           <div className="flex items-center justify-between mb-4">
@@ -107,14 +114,23 @@ export default function DashboardIndex() {
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-(--accent-driprose)">
               dashboard
             </p>
-            {lastDepositId !== null && (
-              <p
-                className={`font-mono text-xs text-(--ink-muted) transition-opacity duration-500 ${tick ? "text-(--accent-driprose)" : ""}`}
-                aria-live="polite"
-              >
-                {lastDepositId.toString()} {lastDepositId === 1n ? "deposit" : "deposits"} on-chain
-                {tick && <span className="ml-2 text-(--accent-driprose)">↑ new</span>}
-              </p>
+            {lastDepositId !== null && lastDepositId !== undefined && (
+              <div className="flex flex-col items-end gap-1">
+                <p
+                  className={`font-mono text-xs text-(--ink-muted) transition-opacity duration-500 ${tick ? "text-(--accent-driprose)" : ""}`}
+                  aria-live="polite"
+                >
+                  {lastDepositId.toString()}{" "}
+                  {lastDepositId === 1n ? "deposit" : "deposits"} on-chain
+                  {tick && (
+                    <span className="ml-2 text-(--accent-driprose)">↑ new</span>
+                  )}
+                </p>
+                <FreshnessPill
+                  cachedAt={depositCachedAt}
+                  onRefresh={refreshAll}
+                />
+              </div>
             )}
           </div>
 
@@ -196,7 +212,7 @@ export default function DashboardIndex() {
                 ? "Recently Sponsored On-chain"
                 : "Try One Of These"}
             </h2>
-            {recent === null ? (
+            {recent === undefined && recentLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[0, 1, 2].map((i) => (
                   <div
@@ -207,7 +223,7 @@ export default function DashboardIndex() {
                   </div>
                 ))}
               </div>
-            ) : recent.length > 0 ? (
+            ) : recent && recent.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {recent.map((r) => (
                   <button

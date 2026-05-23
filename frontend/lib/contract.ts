@@ -1,6 +1,7 @@
 "use client";
 
 import { CONTRACT_ADDRESS, client } from "./genlayer";
+import { withRateLimitRetry } from "./rate-limit";
 
 /** JSON-decoded shape of a repo record stored on-chain. */
 export type RepoRecord = {
@@ -41,29 +42,12 @@ function parseJson<T>(raw: unknown): T | null {
 }
 
 /**
- * Bradbury rate-limits `gen_call` aggressively when many reads fire in
- * parallel. Retry up to 4 times with exponential backoff (250ms, 500ms,
- * 1s, 2s) when the error message indicates rate limiting.
+ * All on-chain reads route through `withRateLimitRetry` from
+ * lib/rate-limit.ts. That helper detects "rate limit exceeded" errors
+ * specifically and retries with exponential backoff (5s, 10s, 20s, 40s).
+ * Non-rate-limit errors are rethrown immediately.
  */
-async function withReadRetry<T>(fn: () => Promise<T>): Promise<T> {
-  const delays = [250, 500, 1000, 2000];
-  let lastErr: unknown;
-  for (let attempt = 0; attempt <= delays.length; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastErr = err;
-      const msg = String((err as Error)?.message ?? err).toLowerCase();
-      const isRateLimit =
-        msg.includes("rate limit") ||
-        msg.includes("limitexceeded") ||
-        msg.includes("request exceeds defined limit");
-      if (!isRateLimit || attempt === delays.length) throw err;
-      await new Promise((r) => setTimeout(r, delays[attempt]));
-    }
-  }
-  throw lastErr;
-}
+const withReadRetry = withRateLimitRetry;
 
 export async function getRepo(repoSlug: string): Promise<RepoRecord | null> {
   const raw = await withReadRetry(() =>
