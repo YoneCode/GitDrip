@@ -1,49 +1,47 @@
 import { describe, it, expect } from "vitest";
-import { formatGlt, parseGlt, shortAddress, ATTOS_PER_GLT } from "@/lib/format";
+import { formatGen, parseGen, shortAddress, ATTOS_PER_GEN } from "@/lib/format";
 
-describe("formatGlt", () => {
+describe("formatGen", () => {
   it("0 wei", () => {
-    expect(formatGlt(0n)).toBe("0 GLT");
+    expect(formatGen(0n)).toBe("0 GEN");
   });
-  it("1 GLT", () => {
-    expect(formatGlt(ATTOS_PER_GLT)).toBe("1 GLT");
+  it("1 GEN", () => {
+    expect(formatGen(ATTOS_PER_GEN)).toBe("1 GEN");
   });
-  it("0.5 GLT", () => {
-    expect(formatGlt(ATTOS_PER_GLT / 2n)).toBe("0.5 GLT");
+  it("0.5 GEN", () => {
+    expect(formatGen(ATTOS_PER_GEN / 2n)).toBe("0.5 GEN");
   });
-  it("123.456 GLT, 4dp", () => {
-    expect(formatGlt(123_456_000_000_000_000_000n + 0n, 4)).toBe("123.456 GLT");
+  it("123.456 GEN, 4dp", () => {
+    expect(formatGen(123_456_000_000_000_000_000n + 0n, 4)).toBe("123.456 GEN");
   });
   it("trims trailing zeros", () => {
-    expect(formatGlt(ATTOS_PER_GLT * 2n + ATTOS_PER_GLT / 10n)).toBe("2.1 GLT");
+    expect(formatGen(ATTOS_PER_GEN * 2n + ATTOS_PER_GEN / 10n)).toBe("2.1 GEN");
   });
   it("negative", () => {
-    expect(formatGlt(-ATTOS_PER_GLT)).toBe("-1 GLT");
+    expect(formatGen(-ATTOS_PER_GEN)).toBe("-1 GEN");
   });
 });
 
-describe("parseGlt", () => {
+describe("parseGen", () => {
   it("integer string", () => {
-    expect(parseGlt("1")).toBe(ATTOS_PER_GLT);
+    expect(parseGen("1")).toBe(ATTOS_PER_GEN);
   });
   it("fractional string", () => {
-    expect(parseGlt("0.5")).toBe(ATTOS_PER_GLT / 2n);
+    expect(parseGen("0.5")).toBe(ATTOS_PER_GEN / 2n);
   });
   it("empty -> 0", () => {
-    expect(parseGlt("")).toBe(0n);
+    expect(parseGen("")).toBe(0n);
   });
   it("roundtrip", () => {
-    const wei = parseGlt("12.345");
-    expect(formatGlt(wei, 4)).toBe("12.345 GLT");
+    const wei = parseGen("12.345");
+    expect(formatGen(wei, 4)).toBe("12.345 GEN");
   });
 });
 
 describe("shortAddress", () => {
   it("formats 6/4 with ellipsis", () => {
-    expect(shortAddress("0x725A57f7ED354eD124812DB9349483095dd38d99")).toBe(
-      "0x725A\u202657f7ED354eD124812DB9349483095dd38d99".slice(0, 6) +
-        "\u2026" +
-        "8d99",
+    expect(shortAddress("0xEb7370b0df3e3d5eCAf9846048693598362D6CE8")).toBe(
+      "0xEb73\u20266CE8",
     );
   });
   it("handles short input", () => {

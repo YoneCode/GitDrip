@@ -5,6 +5,7 @@ const ERROR_MAP: Record<string, string> = {
   "opt_in_proof_failed": "gist verification failed. make sure the gist is public, owned by your account, and contains the exact expected string.",
   "roster_full": "this repo has reached the maximum number of enrolled contributors (50).",
   "zero_value": "amount must be greater than zero.",
+  "below_min": "minimum sponsor deposit is 10 GEN.",
   "period_too_short": "distribution can only run once every 7 days. try again later.",
   "release_already_distributed": "this release tag has already been distributed.",
   "not_dormant": "refunds are only available after 180 days with no distribution.",

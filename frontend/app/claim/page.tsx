@@ -23,7 +23,7 @@ import { humanError } from "@/lib/errors";
 import { useCountUp } from "@/hooks/use-count-up";
 import { useTxStatus } from "@/hooks/use-tx-status";
 import { listRoles } from "@/lib/profile";
-import { formatGlt, formatDate } from "@/lib/format";
+import { formatGen, formatDate } from "@/lib/format";
 
 export default function ClaimPage() {
   const { ready, authenticated, login, address: addr } = useWallet();
@@ -312,9 +312,9 @@ function EnrollmentRail({ wallet }: { wallet: string | null | undefined }) {
                 <p className="text-xs text-(--ink-muted) mt-1">
                   pool{" "}
                   <span className="text-(--ink-body) tabular-nums">
-                    {formatGlt(BigInt(it.record!.pool_wei), 2)}
+                    {formatGen(BigInt(it.record!.pool_wei), 2)}
                   </span>{" "}
-                  GLT · {it.record!.distribution_count}{" "}
+                  GEN · {it.record!.distribution_count}{" "}
                   {it.record!.distribution_count === 1 ? "round" : "rounds"}
                   {it.enrolledAs ? (
                     <>
@@ -332,7 +332,7 @@ function EnrollmentRail({ wallet }: { wallet: string | null | undefined }) {
             </div>
             {it.lastDistShareWei !== null && it.lastDistShareWei !== undefined ? (
               <p className="text-sm tabular-nums text-(--ink-body) shrink-0">
-                last round: +{formatGlt(it.lastDistShareWei, 4)} GLT
+                last round: +{formatGen(it.lastDistShareWei, 4)} GEN
               </p>
             ) : it.registered && it.record!.distribution_count === 0 ? (
               <p className="text-xs text-(--ink-faint) shrink-0">no rounds yet</p>
@@ -460,7 +460,7 @@ function RecentEarnings({ wallet }: { wallet: string | null | undefined }) {
               {e.slug}
             </Link>
             <span className="text-sm tabular-nums text-(--ink-display)">
-              +{formatGlt(e.share, 4)} GLT
+              +{formatGen(e.share, 4)} GEN
             </span>
             <span aria-hidden />
             <span className="text-xs text-(--ink-muted)">

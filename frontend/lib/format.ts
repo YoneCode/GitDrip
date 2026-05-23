@@ -1,4 +1,7 @@
-export const ATTOS_PER_GLT = 1_000_000_000_000_000_000n;
+export const ATTOS_PER_GEN = 1_000_000_000_000_000_000n;
+
+/** Minimum sponsor deposit enforced by the contract: 10 GEN. */
+export const MIN_SPONSOR_WEI = 10n * ATTOS_PER_GEN;
 
 /** "0x3EBD…19E4" — fixed 6/4 truncation. Stable, scannable, copyable. */
 export function shortAddress(addr: string): string {
@@ -7,30 +10,30 @@ export function shortAddress(addr: string): string {
   return `${addr.slice(0, 6)}\u2026${addr.slice(-4)}`;
 }
 
-/** Format wei as "X.YYY GLT" with 4 fractional digits, tabular figures. */
-export function formatGlt(wei: bigint, fractionDigits = 4): string {
-  if (wei === 0n) return `0 GLT`;
+/** Format wei as "X.YYY GEN" with 4 fractional digits, tabular figures. */
+export function formatGen(wei: bigint, fractionDigits = 4): string {
+  if (wei === 0n) return `0 GEN`;
   const negative = wei < 0n;
   const abs = negative ? -wei : wei;
-  const whole = abs / ATTOS_PER_GLT;
-  const remainder = abs % ATTOS_PER_GLT;
+  const whole = abs / ATTOS_PER_GEN;
+  const remainder = abs % ATTOS_PER_GEN;
   const remStr = remainder.toString().padStart(18, "0").slice(0, fractionDigits);
   // Trim trailing zeros from fractional part to keep numbers honest.
   const trimmed = remStr.replace(/0+$/, "");
   const body = trimmed ? `${whole}.${trimmed}` : `${whole}`;
-  return `${negative ? "-" : ""}${body} GLT`;
+  return `${negative ? "-" : ""}${body} GEN`;
 }
 
 /** Parse "1.5" or "1500000000000000000" to wei (bigint). */
-export function parseGlt(input: string): bigint {
+export function parseGen(input: string): bigint {
   const s = input.trim();
   if (s === "") return 0n;
   if (!s.includes(".")) {
-    return BigInt(s) * ATTOS_PER_GLT;
+    return BigInt(s) * ATTOS_PER_GEN;
   }
   const [w, f = ""] = s.split(".");
   const fracPadded = (f + "0".repeat(18)).slice(0, 18);
-  return BigInt(w || "0") * ATTOS_PER_GLT + BigInt(fracPadded || "0");
+  return BigInt(w || "0") * ATTOS_PER_GEN + BigInt(fracPadded || "0");
 }
 
 /** ISO timestamp -> "23 May 2026" (locale-stable, no time-of-day). */

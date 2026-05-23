@@ -193,30 +193,30 @@ class TestSponsor:
     ):
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
-        # Charlie sponsors 1000 wei
+        # Charlie sponsors 10 GEN (= MIN_SPONSOR_WEI)
         direct_vm.sender = direct_charlie
-        direct_vm.value = 1000
+        direct_vm.value = 10 * 10**18
         deposit_id = contract.sponsor("alice/cool-cli")
         assert int(deposit_id) == 0
         record = json.loads(contract.get_repo("alice/cool-cli"))
-        assert record["pool_wei"] == "1000"
+        assert record["pool_wei"] == str(10 * 10**18)
         dep = json.loads(contract.get_deposit(0))
         assert dep == {
-            "amount": "1000",
+            "amount": str(10 * 10**18),
             "refunded": False,
             "repo": "alice/cool-cli",
             "sponsor": _wallet(direct_charlie),
             "ts": dep["ts"],
         }
 
-    def test_zero_value_rejected(
+    def test_below_min_rejected(
         self, direct_vm, direct_deploy, direct_alice, direct_charlie
     ):
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         direct_vm.sender = direct_charlie
         direct_vm.value = 0
-        with direct_vm.expect_revert("[EXPECTED] zero_value"):
+        with direct_vm.expect_revert("[EXPECTED] below_min"):
             contract.sponsor("alice/cool-cli")
 
     def test_no_repo_rejected(
@@ -224,7 +224,7 @@ class TestSponsor:
     ):
         contract = direct_deploy("contract/contracts/gitdrip.py")
         direct_vm.sender = direct_charlie
-        direct_vm.value = 1000
+        direct_vm.value = 10 * 10**18
         with direct_vm.expect_revert("[EXPECTED] no_repo"):
             contract.sponsor("ghost/repo")
 
@@ -297,9 +297,9 @@ class TestDistribute:
             contract, direct_vm, direct_charlie, login="carol", gist_id="g2"
         )
 
-        # Sponsor 9000 wei
+        # Sponsor 90 GEN
         direct_vm.sender = direct_alice  # any caller
-        direct_vm.value = 9000
+        direct_vm.value = 90 * 10**18
         contract.sponsor("alice/cool-cli")
 
         # Move clock forward past MIN_PERIOD_SEC (7d).
@@ -310,20 +310,20 @@ class TestDistribute:
 
         direct_vm.value = 0
         result = contract.distribute("alice/cool-cli")
-        # 60 + 30 = 90; bob = 9000*60/90 = 6000, carol = 9000*30/90 = 3000.
-        assert result == "distributed_9000"
+        # scores 60 + 30 = 90 → bob = 90 GEN * 60/90 = 60 GEN, carol = 30 GEN.
+        assert result == f"distributed_{90 * 10**18}"
 
         record = json.loads(contract.get_repo("alice/cool-cli"))
         assert record["pool_wei"] == "0"
         assert record["distribution_count"] == 1
-        assert record["total_distributed_wei"] == "9000"
+        assert record["total_distributed_wei"] == str(90 * 10**18)
 
-        assert contract.get_pending(_wallet(direct_bob)) == "6000"
-        assert contract.get_pending(_wallet(direct_charlie)) == "3000"
+        assert contract.get_pending(_wallet(direct_bob)) == str(60 * 10**18)
+        assert contract.get_pending(_wallet(direct_charlie)) == str(30 * 10**18)
 
         snapshot = json.loads(contract.get_score_log("alice/cool-cli", 1))
         assert snapshot["scores"] == {"bob": 60, "carol": 30}
-        assert snapshot["distributed_wei"] == "9000"
+        assert snapshot["distributed_wei"] == str(90 * 10**18)
 
     def test_period_too_short_rejected(
         self, direct_vm, direct_deploy, direct_alice, direct_bob
@@ -331,7 +331,7 @@ class TestDistribute:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         _enroll(contract, direct_vm, direct_bob, login="bob")
-        direct_vm.value = 1000
+        direct_vm.value = 10 * 10**18
         contract.sponsor("alice/cool-cli")
 
         direct_vm.value = 0
@@ -354,7 +354,7 @@ class TestDistribute:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         _enroll(contract, direct_vm, direct_bob, login="bob")
-        direct_vm.value = 5000
+        direct_vm.value = 50 * 10**18
         contract.sponsor("alice/cool-cli")
 
         direct_vm.warp("2027-01-01T00:00:00Z")
@@ -383,7 +383,7 @@ class TestDistribute:
         result = contract.distribute("alice/cool-cli")
         assert result == "no_substantive_work"
         # pool stays put
-        assert json.loads(contract.get_repo("alice/cool-cli"))["pool_wei"] == "5000"
+        assert json.loads(contract.get_repo("alice/cool-cli"))["pool_wei"] == str(50 * 10**18)
 
     def test_release_distribution_bypasses_period(
         self, direct_vm, direct_deploy, direct_alice, direct_bob
@@ -391,7 +391,7 @@ class TestDistribute:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         _enroll(contract, direct_vm, direct_bob, login="bob")
-        direct_vm.value = 1000
+        direct_vm.value = 10 * 10**18
         contract.sponsor("alice/cool-cli")
 
         # Same block — period would normally reject; release path skips check.
@@ -417,8 +417,8 @@ class TestDistribute:
 
         direct_vm.value = 0
         result = contract.distribute_on_release("alice/cool-cli", "v1.0")
-        assert result == "distributed_1000"
-        assert contract.get_pending(_wallet(direct_bob)) == "1000"
+        assert result == f"distributed_{10 * 10**18}"
+        assert contract.get_pending(_wallet(direct_bob)) == str(10 * 10**18)
         # Same tag rejected
         with direct_vm.expect_revert("[EXPECTED] release_already_distributed"):
             contract.distribute_on_release("alice/cool-cli", "v1.0")
@@ -446,7 +446,7 @@ class TestClaim:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         _enroll(contract, direct_vm, direct_bob, login="bob")
-        direct_vm.value = 1000
+        direct_vm.value = 10 * 10**18
         contract.sponsor("alice/cool-cli")
         direct_vm.warp("2027-01-01T00:00:00Z")
         mock_web_json(
@@ -472,7 +472,7 @@ class TestClaim:
         contract.distribute("alice/cool-cli")
 
         direct_vm.sender = direct_bob
-        assert contract.claim() == "claimed_1000"
+        assert contract.claim() == f"claimed_{10 * 10**18}"
         # second claim — nothing left
         assert contract.claim() == "nothing_to_claim"
         assert contract.get_pending(_wallet(direct_bob)) == "0"
@@ -492,16 +492,16 @@ class TestSponsorRefund:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         direct_vm.sender = direct_charlie
-        direct_vm.value = 5000
+        direct_vm.value = 50 * 10**18
         deposit_id = contract.sponsor("alice/cool-cli")
 
         # Jump well past the 180-day dormant window.
         direct_vm.warp("2030-01-01T00:00:00Z")
         direct_vm.value = 0
         result = contract.sponsor_refund(deposit_id)
-        assert result == "refunded_5000"
+        assert result == f"refunded_{50 * 10**18}"
         # Sponsor's pending balance now holds the refund — they call claim().
-        assert contract.get_pending(_wallet(direct_charlie)) == "5000"
+        assert contract.get_pending(_wallet(direct_charlie)) == str(50 * 10**18)
         dep = json.loads(contract.get_deposit(deposit_id))
         assert dep["refunded"] is True
 
@@ -515,7 +515,7 @@ class TestSponsorRefund:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         direct_vm.sender = direct_charlie
-        direct_vm.value = 5000
+        direct_vm.value = 50 * 10**18
         deposit_id = contract.sponsor("alice/cool-cli")
 
         direct_vm.value = 0
@@ -533,7 +533,7 @@ class TestSponsorRefund:
         contract = direct_deploy("contract/contracts/gitdrip.py")
         _register(contract, direct_vm, direct_alice)
         direct_vm.sender = direct_charlie
-        direct_vm.value = 5000
+        direct_vm.value = 50 * 10**18
         deposit_id = contract.sponsor("alice/cool-cli")
 
         direct_vm.warp("2030-01-01T00:00:00Z")

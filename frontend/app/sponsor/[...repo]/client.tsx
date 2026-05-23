@@ -10,7 +10,7 @@ import { WeiAmount } from "@/components/wei-amount";
 import { TxLink } from "@/components/tx-link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { getRepo, sponsor, type RepoRecord } from "@/lib/contract";
-import { parseGlt } from "@/lib/format";
+import { parseGen, MIN_SPONSOR_WEI, formatGen } from "@/lib/format";
 import { humanError } from "@/lib/errors";
 import { explorerContract } from "@/lib/genlayer";
 
@@ -24,7 +24,7 @@ export default function SponsorPageClient({
 
   const [record, setRecord] = useState<RepoRecord | null>(null);
   const [loading, setLoading] = useState(true);
-  const [amount, setAmount] = useState("0.5");
+  const [amount, setAmount] = useState("10");
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +46,11 @@ export default function SponsorPageClient({
     setTxHash(null);
     try {
       setSubmitting(true);
-      const wei = parseGlt(amount);
-      if (wei <= 0n) {
-        setError("amount must be greater than zero");
+      const wei = parseGen(amount);
+      if (wei < MIN_SPONSOR_WEI) {
+        setError(
+          `minimum sponsor deposit is ${formatGen(MIN_SPONSOR_WEI, 0)}`,
+        );
         return;
       }
       const tx = await sponsor(repoSlug, wei);
@@ -87,7 +89,7 @@ export default function SponsorPageClient({
               htmlFor="amount"
               className="block font-mono text-xs uppercase tracking-[0.14em] text-(--ink-muted) mb-2"
             >
-              amount (GLT)
+              amount (GEN)
             </label>
             <Input
               id="amount"
@@ -96,8 +98,11 @@ export default function SponsorPageClient({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="h-12 text-lg font-mono tabular-nums"
-              placeholder="0.5"
+              placeholder="10"
             />
+            <p className="mt-1.5 font-mono text-xs text-(--ink-muted)">
+              minimum 10 GEN per deposit
+            </p>
 
             {error && (
               <p
@@ -132,7 +137,7 @@ export default function SponsorPageClient({
                   </>
                 ) : (
                   <>
-                    sponsor {amount || "0"} GLT
+                    sponsor {amount || "0"} GEN
                     <ArrowRight aria-hidden className="w-4 h-4 ml-1.5" />
                   </>
                 )}

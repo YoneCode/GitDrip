@@ -137,7 +137,7 @@ def test_distribute_runs_back_to_back(
 
     # First sponsor + distribute
     direct_vm.sender = direct_bob
-    direct_vm.value = 1_000_000_000_000_000_000  # 1 GLT
+    direct_vm.value = 10 * 10**18  # 10 GEN
     contract.sponsor(repo)
 
     _setup_scoring_mocks(direct_vm, repo, "alnamodevloper", 80)
@@ -150,7 +150,7 @@ def test_distribute_runs_back_to_back(
     # Sponsor again, then distribute again — production would raise
     # period_too_short. In test-mode it must succeed.
     direct_vm.sender = direct_bob
-    direct_vm.value = 500_000_000_000_000_000
+    direct_vm.value = 10 * 10**18
     contract.sponsor(repo)
 
     direct_vm.sender = direct_alice
@@ -180,7 +180,7 @@ def test_sponsor_refund_immediately(
     _register(contract, direct_vm, direct_alice, repo)
 
     direct_vm.sender = direct_bob
-    direct_vm.value = 2_000_000_000_000_000_000
+    direct_vm.value = 20 * 10**18
     deposit_id = contract.sponsor(repo)
     assert int(deposit_id) == 0
 
@@ -188,13 +188,13 @@ def test_sponsor_refund_immediately(
     direct_vm.sender = direct_bob
     direct_vm.value = 0
     out = contract.sponsor_refund(0)
-    assert out == "refunded_2000000000000000000", f"expected refund, got {out}"
+    assert out == f"refunded_{20 * 10**18}", f"expected refund, got {out}"
 
     rec = json.loads(contract.get_repo(repo))
     assert rec["pool_wei"] == "0"
 
     pending = contract.get_pending(_wallet(direct_bob))
-    assert pending == "2000000000000000000"
+    assert pending == str(20 * 10**18)
 
 
 # ---------------------------------------------------------------------------
@@ -210,7 +210,7 @@ def test_refund_then_claim(direct_deploy, direct_vm, direct_alice, direct_bob):
     _register(contract, direct_vm, direct_alice, repo)
 
     direct_vm.sender = direct_bob
-    direct_vm.value = 3_000_000_000_000_000_000
+    direct_vm.value = 30 * 10**18
     contract.sponsor(repo)
 
     direct_vm.sender = direct_bob
@@ -222,7 +222,7 @@ def test_refund_then_claim(direct_deploy, direct_vm, direct_alice, direct_bob):
     direct_vm.sender = direct_bob
     direct_vm.value = 0
     out = contract.claim()
-    assert out.startswith("claimed_3000000000000000000"), out
+    assert out.startswith(f"claimed_{30 * 10**18}"), out
 
     pending = contract.get_pending(_wallet(direct_bob))
     assert pending == "0"

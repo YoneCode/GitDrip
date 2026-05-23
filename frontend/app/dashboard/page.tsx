@@ -9,7 +9,7 @@ import { RateLimitToast } from "@/components/rate-limit-toast";
 import { useViewTransition } from "@/hooks/use-view-transition";
 import { useWallet } from "@/hooks/use-wallet";
 import { useNextDeposit, useRecentSponsored } from "@/hooks/use-repo-data";
-import { formatGlt } from "@/lib/format";
+import { formatGen } from "@/lib/format";
 import { getRepoActivity, type ProfileEntry } from "@/lib/profile";
 
 const EXAMPLES = [
@@ -234,7 +234,7 @@ export default function DashboardIndex() {
                       {r.slug}
                     </p>
                     <p className="text-xs text-(--ink-muted) mt-2 leading-relaxed tabular-nums">
-                      pool {formatGlt(BigInt(r.pool_wei), 2)} GLT
+                      pool {formatGen(BigInt(r.pool_wei), 2)} GEN
                     </p>
                     <span className="inline-flex items-center gap-1 mt-4 text-xs font-mono text-(--ink-faint) group-hover:text-(--accent-driprose) transition-colors">
                       Open

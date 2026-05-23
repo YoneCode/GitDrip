@@ -28,8 +28,8 @@ Live on Bradbury testnet (chain id 4221).
 
 | | |
 |---|---|
-| **Contract** | `0x725A57f7ED354eD124812DB9349483095dd38d99` |
-| **Deploy tx** | `0xbc563a7d0fec0d3fc7ea2ab33304bd09db69052bcc684b6a1aa96b8981fadf23` |
+| **Contract** | `0xEb7370b0df3e3d5eCAf9846048693598362D6CE8` |
+| **Deploy tx** | `0xffd6f57ee0f19310797bb54c01abaec3204621bbd578d5705e69ccad522c9ab9` |
 | **Test repo** | [`alnamodevloper/gitdrip-demo`](https://github.com/alnamodevloper/gitdrip-demo) |
 
 ## Repo layout
@@ -74,7 +74,7 @@ npm run render                           # writes gitdrip-demo.mp4
 1. **Maintainer registers a repo.** The contract calls
    `gl.eq_principle.prompt_non_comparative` to verify the repo's
    `.gitdrip.json` declares the sender's wallet.
-2. **Sponsors deposit GLT** against the repo. Funds sit in escrow.
+2. **Sponsors deposit GEN** against the repo (minimum 10 GEN). Funds sit in escrow.
 3. **Contributors enroll** by pushing a verifiable commit that proves
    their GitHub login matches the wallet that's enrolling.
 4. **Each cycle, anyone calls `distribute(...)`.** The contract pulls

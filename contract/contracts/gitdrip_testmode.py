@@ -3,7 +3,7 @@
 GitDrip — On-chain open source sponsorship splitter with AI substance scoring.
 
 Maintainers register a public GitHub repo by committing a `.gitdrip.json` file
-that declares their wallet. Sponsors deposit GLT into the repo's pool. Periodic
+that declares their wallet. Sponsors deposit GEN into the repo's pool. Periodic
 distributions fetch each opted-in contributor's commit diffs from the GitHub
 API and score them with an LLM via the equivalence principle. Pool funds are
 credited to contributors' pending balances; contributors call `claim()` to
@@ -38,6 +38,7 @@ MAX_CONTRIBUTORS_PER_REPO = 50          # bounds prompt size
 MAX_COMMITS_PER_CONTRIBUTOR = 20        # bounds prompt size
 MAX_DIFF_CHARS = 1500                   # per-commit patch truncation
 MAX_PROMPT_PAYLOAD_BYTES = 14000        # cap on serialized payload in prompt
+MIN_SPONSOR_WEI = 10 * 10**18           # T8 — minimum sponsor deposit: 10 GEN
 
 
 # ---------------------------------------------------------------------------
@@ -274,17 +275,19 @@ class GitDripTestMode(gl.Contract):
     # ---- SPONSORSHIP (T8, T9) -------------------------------------------
     @gl.public.write.payable
     def sponsor(self, repo_slug: str) -> u256:
-        """Sponsor adds GLT to the repo pool.
+        """Sponsor adds GEN to the repo pool.
 
         Each deposit is tracked individually so a sponsor can later call
         `sponsor_refund(deposit_id)` if the repo goes dormant (T8).
+
+        Minimum deposit: 10 GEN (MIN_SPONSOR_WEI).
         """
         if repo_slug not in self.repos:
             raise gl.vm.UserError(f"{ERR_EXPECTED} no_repo")
 
         amount = int(gl.message.value)
-        if amount <= 0:
-            raise gl.vm.UserError(f"{ERR_EXPECTED} zero_value")
+        if amount < MIN_SPONSOR_WEI:
+            raise gl.vm.UserError(f"{ERR_EXPECTED} below_min")
 
         record = json.loads(self.repos[repo_slug])
         record["pool_wei"] = str(int(record["pool_wei"]) + amount)

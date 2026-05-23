@@ -1,6 +1,6 @@
 "use client";
 
-import { formatGlt } from "@/lib/format";
+import { formatGen } from "@/lib/format";
 
 export function WeiAmount({
   value,
@@ -11,11 +11,11 @@ export function WeiAmount({
   fractionDigits?: number;
   className?: string;
 }) {
-  const text = formatGlt(value, fractionDigits);
+  const text = formatGen(value, fractionDigits);
   return (
     <span
       className={`tabular-nums ${className}`}
-      title={`${value.toString()} attoGLT`}
+      title={`${value.toString()} attoGEN`}
     >
       {text}
     </span>

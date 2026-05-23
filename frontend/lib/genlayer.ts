@@ -5,7 +5,7 @@ import { testnetBradbury } from "genlayer-js/chains";
 
 export const CONTRACT_ADDRESS =
   (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` | undefined) ??
-  ("0x725A57f7ED354eD124812DB9349483095dd38d99" as const);
+  ("0xEb7370b0df3e3d5eCAf9846048693598362D6CE8" as const);
 
 export const EXPLORER = "https://explorer-bradbury.genlayer.com";
 

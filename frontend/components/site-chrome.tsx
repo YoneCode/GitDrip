@@ -85,7 +85,7 @@ export function SiteFooter() {
           deployed on{" "}
           <a
             className="text-(--accent-driprose) hover:text-(--accent-driprose-hover) underline underline-offset-2"
-            href="https://explorer-bradbury.genlayer.com/contracts/0x725A57f7ED354eD124812DB9349483095dd38d99"
+            href="https://explorer-bradbury.genlayer.com/contracts/0xEb7370b0df3e3d5eCAf9846048693598362D6CE8"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -99,7 +99,7 @@ export function SiteFooter() {
 }
 
 function CopyAddress() {
-  const addr = "0x725A57f7ED354eD124812DB9349483095dd38d99";
+  const addr = "0xEb7370b0df3e3d5eCAf9846048693598362D6CE8";
   const [copied, setCopied] = useState(false);
   const onClick = () => {
     void navigator.clipboard.writeText(addr);
