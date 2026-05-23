@@ -86,14 +86,6 @@ npm run render                           # writes gitdrip-demo.mp4
    `claim()` to sweep their share. There's no admin signature, no
    manual override.
 
-## Stack
-
-- **Contract:** Python (`gl.Contract`) on GenLayer's GenVM
-- **dApp:** Next.js + Tailwind + viem + a wallet provider
-- **Tests:** `gltest` direct mode for the contract, Vitest + Playwright
-  for the frontend
-- **Video:** Remotion @ 1920×1080 / 60 fps
-
 ## License
 
 Apache 2.0 — see `LICENSE`.
