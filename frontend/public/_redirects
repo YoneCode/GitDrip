@@ -1,0 +1,10 @@
+# Cloudflare Pages rewrite rules.
+#
+# Both dynamic routes are static-exported with a single placeholder
+# (/dashboard/_/index.html and /sponsor/_/index.html). For any actual
+# repo path (e.g. /dashboard/alnamodevloper/gitdrip-demo/), Cloudflare
+# serves the placeholder HTML and the client-side React router reads
+# the real URL and renders the right repo dashboard.
+
+/dashboard/*  /dashboard/_/  200
+/sponsor/*    /sponsor/_/    200
