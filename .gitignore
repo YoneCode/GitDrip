@@ -7,3 +7,6 @@ artifacts/
 .env.local
 node_modules/
 .npm-global/
+
+# Demo video — kept locally, not shared
+video/
