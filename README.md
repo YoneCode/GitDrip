@@ -28,8 +28,8 @@ Live on Bradbury testnet (chain id 4221).
 
 | | |
 |---|---|
-| **Contract** | `0xEb7370b0df3e3d5eCAf9846048693598362D6CE8` |
-| **Deploy tx** | `0xffd6f57ee0f19310797bb54c01abaec3204621bbd578d5705e69ccad522c9ab9` |
+| **Contract** | `0x4f079033484B806e42385E53bE20209B89049Bee` |
+| **Deploy tx** | `0x28ce08ed47633ada5226b1deb983592dfd9f82dd16a835a3a82dae1b2822ac74` |
 | **Test repo** | [`alnamodevloper/gitdrip-demo`](https://github.com/alnamodevloper/gitdrip-demo) |
 
 ## Repo layout

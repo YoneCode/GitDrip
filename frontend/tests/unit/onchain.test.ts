@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createClient } from "genlayer-js";
 import { testnetBradbury } from "genlayer-js/chains";
 
-const CONTRACT = "0xEb7370b0df3e3d5eCAf9846048693598362D6CE8" as `0x${string}`;
+const CONTRACT = "0x4f079033484B806e42385E53bE20209B89049Bee" as `0x${string}`;
 const client = createClient({ chain: testnetBradbury });
 
 describe("Bradbury on-chain reads (real RPC, no mocks)", () => {

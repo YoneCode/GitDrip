@@ -24,7 +24,7 @@ from genlayer_py.chains import testnet_bradbury
 from eth_account import Account
 
 
-DEFAULT_CONTRACT = "0xEb7370b0df3e3d5eCAf9846048693598362D6CE8"
+DEFAULT_CONTRACT = "0x4f079033484B806e42385E53bE20209B89049Bee"
 
 
 def main() -> int:

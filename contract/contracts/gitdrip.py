@@ -8,8 +8,6 @@ distributions fetch each opted-in contributor's commit diffs from the GitHub
 API and score them with an LLM via the equivalence principle. Pool funds are
 credited to contributors' pending balances; contributors call `claim()` to
 withdraw (pull pattern).
-
-Design source-of-truth: idea4.md §7 (Contract Code) and §2 (Threat Model).
 """
 
 from genlayer import *
@@ -19,10 +17,9 @@ from datetime import datetime, timezone
 
 
 # ---------------------------------------------------------------------------
-# Error prefixes — see write-contract skill "Error Classification".
-# Validators compare leader/validator errors using these tags so that
-# deterministic failures (EXPECTED) require exact match while LLM errors
-# force consensus rotation.
+# Error prefixes. Validators compare leader/validator errors using these tags
+# so that deterministic failures (EXPECTED) require exact match while LLM
+# errors force consensus rotation.
 # ---------------------------------------------------------------------------
 ERR_EXPECTED = "[EXPECTED]"
 ERR_EXTERNAL = "[EXTERNAL]"

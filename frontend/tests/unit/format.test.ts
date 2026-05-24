@@ -40,8 +40,8 @@ describe("parseGen", () => {
 
 describe("shortAddress", () => {
   it("formats 6/4 with ellipsis", () => {
-    expect(shortAddress("0xEb7370b0df3e3d5eCAf9846048693598362D6CE8")).toBe(
-      "0xEb73\u20266CE8",
+    expect(shortAddress("0x4f079033484B806e42385E53bE20209B89049Bee")).toBe(
+      "0x4f07\u20269Bee",
     );
   });
   it("handles short input", () => {
